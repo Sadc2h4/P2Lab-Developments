@@ -657,16 +657,19 @@ body {
 
 .card-images-wrap {
   margin: -22px -22px 0;   /* カードのpadding分を打ち消して端まで伸ばす */
+  height: 120px;            /* 高さを固定 (元の160pxの約3/4) */
+  overflow: hidden;
   position: relative;
   background: var(--bg);
   flex-shrink: 0;
 }
 
-/* 横幅100%に合わせ、縦幅は画像の比率に従って自動伸縮 */
 .card-single-img {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
+  object-fit: cover;        /* 縦横比を保ちながら上下クロップして埋める */
+  object-position: center;
 }
 
 /* ===========================

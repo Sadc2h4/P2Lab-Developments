@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page_specified.txt エディター</title>
+  <style>
+    :root {
+      --bg:         #F2F2F7;
+      --card:       #FFFFFF;
+      --accent:     #0071E3;
+      --accent-dk:  #005BBF;
+      --text-1:     #1D1D1F;
+      --text-2:     #6E6E73;
+      --text-3:     #AEAEB2;
+      --border:     #E5E5EA;
+      --radius:     14px;
+      --shadow:     0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    img { display: block; max-width: 100%; }
+    button, input, textarea { font: inherit; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI",
+                   "Noto Sans JP", sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────── */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(22, 22, 26, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .app-header h1 { color: #fff; font-size: 15px; font-weight: 700; }
+    .badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 20px;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Layout ─────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 20px;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 24px;
+      align-items: start;
+    }
+
+    /* ── Panel ───────────────────────────────── */
+    .panel {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel + .panel { margin-top: 20px; }
+
+    .panel-head {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-head-icon { font-size: 16px; }
+    .panel-title { font-size: 13px; font-weight: 700; }
+
+    .panel-body { padding: 20px; }
+
+    /* ── Form section ────────────────────────── */
+    .form-section { margin-bottom: 26px; }
+    .form-section:last-child { margin-bottom: 0; }
+
+    .sec-title {
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-3);
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .field { margin-bottom: 13px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .opt {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      background: var(--bg);
+      padding: 1px 7px;
+      border-radius: 4px;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-1);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field-input:focus { border-color: var(--accent); }
+    .field-hint {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 4px;
+    }
+
+    /* ── Color field ─────────────────────────── */
+    .color-row { display: flex; gap: 8px; align-items: center; }
+    .color-swatch {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      padding: 3px;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: #fff;
+    }
+    .color-swatch::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-swatch::-webkit-color-swatch { border-radius: 4px; border: none; }
+    .color-text {
+      flex: 1;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 12.5px;
+      letter-spacing: 0.5px;
+    }
+    .color-clear {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-3);
+      font-size: 15px;
+      padding: 4px;
+      border-radius: 4px;
+      line-height: 1;
+      flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    .color-clear:hover { color: var(--text-1); }
+
+    /* Gradient row */
+    .grad-rows { display: flex; flex-direction: column; gap: 8px; }
+    .grad-row { display: flex; align-items: center; gap: 8px; }
+    .grad-num {
+      font-size: 10.5px; font-weight: 700;
+      color: var(--text-3);
+      width: 22px; text-align: center; flex-shrink: 0;
+    }
+
+    /* ── Radio tabs ──────────────────────────── */
+    .radio-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+    .radio-tab { flex: 1; }
+    .radio-tab input { display: none; }
+    .radio-tab label {
+      display: block;
+      text-align: center;
+      padding: 6px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .radio-tab input:checked + label {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Emoji chips ─────────────────────────── */
+    .emoji-chips { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+    .emoji-chip {
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 5px;
+      border-radius: 7px;
+      transition: background 0.1s;
+      line-height: 1;
+    }
+    .emoji-chip:hover { background: var(--bg); }
+
+    /* ── Preview ─────────────────────────────── */
+    .preview-wrap {
+      margin: 0 16px 16px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .pv-nav {
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: rgba(22,22,26,0.92);
+      transition: background 0.3s;
+    }
+    .pv-icon {
+      width: 26px; height: 26px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: grid; place-items: center;
+      font-size: 13px; flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .pv-nav-name {
+      color: #fff; font-size: 13px; font-weight: 700;
+    }
+
+    .pv-hero {
+      padding: 28px 16px;
+      text-align: center;
+      background: linear-gradient(135deg,#16161A 0%,#1E2A3A 55%,#0D3460 100%);
+      transition: background 0.3s;
+    }
+    .pv-hero h2 {
+      font-size: 18px; font-weight: 800;
+      color: #fff; margin-bottom: 7px;
+      transition: color 0.2s;
+    }
+    .pv-hero p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.65);
+      transition: color 0.2s;
+    }
+
+    .pv-content {
+      padding: 14px; background: var(--bg);
+      transition: background 0.3s;
+    }
+    .pv-cards {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px;
+    }
+    .pv-card {
+      background: #fff; border-radius: 8px; height: 52px;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pv-dot {
+      width: 24px; height: 24px;
+      background: var(--accent); border-radius: 6px; opacity: 0.35;
+      transition: background 0.3s;
+    }
+
+    /* ── Output ──────────────────────────────── */
+    .output-box {
+      width: 100%;
+      height: 260px;
+      padding: 13px 14px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-1);
+      background: #FAFAFA;
+      resize: vertical;
+      outline: none;
+    }
+    .output-box:focus { border-color: var(--accent); }
+
+    .output-actions { display: flex; gap: 9px; margin-top: 11px; }
+
+    /* ── Buttons ─────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center;
+      justify-content: center; gap: 6px;
+      padding: 9px 18px;
+      border-radius: 9px;
+      font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer;
+      transition: all 0.15s; text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); color: #fff; flex: 1; }
+    .btn-primary:hover { background: var(--accent-dk); }
+    .btn-secondary {
+      background: var(--bg); color: var(--text-1);
+      border: 1.5px solid var(--border);
+    }
+    .btn-secondary:hover { background: #E5E5EA; }
+    .btn-block { width: 100%; margin-top: 8px; }
+
+    /* ── Import ──────────────────────────────── */
+    .import-zone {
+      position: relative;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 22px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .import-zone:hover, .import-zone.over {
+      border-color: var(--accent);
+      background: rgba(0,113,227,0.04);
+    }
+    .import-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+    .import-zone-icon { font-size: 26px; margin-bottom: 8px; }
+    .import-zone-text { font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+    .import-zone-text strong { color: var(--accent); }
+
+    .paste-label { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 14px 0 6px; }
+    .paste-area {
+      width: 100%; padding: 10px 12px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 12px; line-height: 1.6;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      resize: vertical; outline: none; color: var(--text-1);
+      background: #FAFAFA;
+    }
+    .paste-area:focus { border-color: var(--accent); }
+
+    /* ── Toast ───────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(64px);
+      background: #1D1D1F; color: #fff;
+      padding: 10px 22px; border-radius: 24px;
+      font-size: 13px; font-weight: 600;
+      z-index: 9999;
+      transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s;
+      opacity: 0; pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── Responsive ──────────────────────────── */
+    @media (max-width: 920px) {
+      .layout { grid-template-columns: 1fr; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========== ヘッダー ========== -->
+<header class="app-header">
+  <h1>Page_specified.txt エディター</h1>
+  <span class="badge">ビジュアルエディター</span>
+</header>
+
+<div class="layout">
+
+  <!-- ============================================================
+       左パネル: 設定フォーム
+       ============================================================ -->
+  <div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-head-icon">⚙</span>
+        <span class="panel-title">設定項目</span>
+      </div>
+      <div class="panel-body">
+
+        <!-- ── ナビゲーションバー ── -->
+        <div class="form-section">
+          <div class="sec-title">ナビゲーションバー（上部固定バー）</div>
+
+          <div class="field">
+            <div class="field-label">サイト名 <span class="opt">省略可</span></div>
+            <input type="text" class="field-input" id="siteTitle" placeholder="例:（サイト名を入力）" oninput="update()">
+          </div>
+
+          <div class="field">
+            <div class="field-label">サイトアイコン <span class="opt">省略可 / 絵文字1文字</span></div>
+            <input type="text" class="field-input" id="siteIcon" placeholder="例: 🏢" oninput="update()">
+            <div class="emoji-chips">
+              <span class="emoji-chip" onclick="pick('siteIcon','🏢')">🏢</span>
+              <span class="emoji-chip" onclick="pick('siteIcon','⚙')">⚙</span>
+              <span class="emoji-chip" onclick="pick('siteIcon','🔧')">🔧</span>
+              <span class="emoji-chip" onclick="pick('siteIcon','💼')">💼</span>
+              <span class="emoji-chip" onclick="pick('siteIcon','📋')">📋</span>
+              <span class="emoji-chip" onclick="pick('siteIcon','🖥️')">🖥️</span>
+              <span class="emoji-chip" onclick="pick('siteIcon','🚀')">🚀</span>
+              <span class="emoji-chip" onclick="pick('siteIcon','💡')">💡</span>
+              <span class="emoji-chip" onclick="pick('siteIcon','🏭')">🏭</span>
+              <span class="emoji-chip" onclick="pick('siteIcon','🏥')">🏥</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">アクセントカラー（ボタン色） <span class="opt">省略可</span></div>
+            <div class="color-row">
+              <input type="color" class="color-swatch" id="accentSw" value="#0071E3"
+                     oninput="swToText('accentSw','accentColor');update()">
+              <input type="text" class="field-input color-text" id="accentColor"
+                     placeholder="#0071E3" oninput="textToSw('accentColor','accentSw');update()">
+              <button class="color-clear" onclick="clearColor('accentColor','accentSw')" title="クリア">✕</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">ナビ色（ナビバー背景） <span class="opt">省略可</span></div>
+            <div class="color-row">
+              <input type="color" class="color-swatch" id="navSw" value="#16161A"
+                     oninput="swToText('navSw','navColor');update()">
+              <input type="text" class="field-input color-text" id="navColor"
+                     placeholder="#16161A" oninput="textToSw('navColor','navSw');update()">
+              <button class="color-clear" onclick="clearColor('navColor','navSw')" title="クリア">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ヒーローエリア ── -->
+        <div class="form-section">
+          <div class="sec-title">ヒーローエリア（タイトル帯）</div>
+
+          <div class="field">
+            <div class="field-label">背景の指定方法</div>
+            <div class="radio-tabs">
+              <div class="radio-tab">
+                <input type="radio" name="heroBg" id="heroBgCol" value="color" checked
+                       onchange="toggleHeroBg();update()">
+                <label for="heroBgCol">🎨 色で指定</label>
+              </div>
+              <div class="radio-tab">
+                <input type="radio" name="heroBg" id="heroBgImg" value="image"
+                       onchange="toggleHeroBg();update()">
+                <label for="heroBgImg">🖼 画像で指定</label>
+              </div>
+            </div>
+
+            <!-- 色指定 -->
+            <div id="heroBgColFields">
+              <div class="grad-rows">
+                <div class="grad-row">
+                  <span class="grad-num">色①</span>
+                  <input type="color" class="color-swatch" id="heroC1Sw" value="#16171C"
+                         oninput="swToText('heroC1Sw','heroC1');update()">
+                  <input type="text" class="field-input color-text" id="heroC1"
+                         placeholder="#16171C" oninput="textToSw('heroC1','heroC1Sw');update()">
+                  <button class="color-clear" onclick="clearColor('heroC1','heroC1Sw')" title="クリア">✕</button>
+                </div>
+                <div class="grad-row">
+                  <span class="grad-num">色②</span>
+                  <input type="color" class="color-swatch" id="heroC2Sw" value="#0E335E"
+                         oninput="swToText('heroC2Sw','heroC2');update()">
+                  <input type="text" class="field-input color-text" id="heroC2"
+                         placeholder="空欄 = 単色" oninput="textToSw('heroC2','heroC2Sw');update()">
+                  <button class="color-clear" onclick="clearColor('heroC2','heroC2Sw')" title="クリア">✕</button>
+                </div>
+              </div>
+              <div class="field-hint">色①のみ入力 = 単色 ／ 色①＋色② = グラデーション</div>
+            </div>
+
+            <!-- 画像指定 -->
+            <div id="heroBgImgFields" style="display:none">
+              <input type="text" class="field-input" id="heroImg"
+                     placeholder="例: images/hero.png  または  https://..." oninput="update()">
+              <div class="field-hint">推奨サイズ: 1920 × 220px（比率 約 8.7:1）</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">大見出しテキスト <span class="opt">省略可</span></div>
+            <input type="text" class="field-input" id="heroTitle"
+                   placeholder="例:（大見出しを入力）" oninput="update()">
+          </div>
+
+          <div class="field">
+            <div class="field-label">大見出し 文字色 <span class="opt">省略可</span></div>
+            <div class="color-row">
+              <input type="color" class="color-swatch" id="heroTCSw" value="#FFFFFF"
+                     oninput="swToText('heroTCSw','heroTC');update()">
+              <input type="text" class="field-input color-text" id="heroTC"
+                     placeholder="#FFFFFF" oninput="textToSw('heroTC','heroTCSw');update()">
+              <button class="color-clear" onclick="clearColor('heroTC','heroTCSw')" title="クリア">✕</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">サブ説明文 <span class="opt">省略可</span></div>
+            <input type="text" class="field-input" id="heroDesc"
+                   placeholder="例:（サブ説明文を入力）" oninput="update()">
+          </div>
+
+          <div class="field">
+            <div class="field-label">サブ説明文 文字色 <span class="opt">省略可</span></div>
+            <div class="color-row">
+              <input type="color" class="color-swatch" id="heroDCSw" value="#B0B3B8"
+                     oninput="swToText('heroDCSw','heroDC');update()">
+              <input type="text" class="field-input color-text" id="heroDC"
+                     placeholder="#B0B3B8" oninput="textToSw('heroDC','heroDCSw');update()">
+              <button class="color-clear" onclick="clearColor('heroDC','heroDCSw')" title="クリア">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ページ背景 ── -->
+        <div class="form-section">
+          <div class="sec-title">ページ背景</div>
+
+          <div class="field">
+            <div class="field-label">背景の指定方法</div>
+            <div class="radio-tabs">
+              <div class="radio-tab">
+                <input type="radio" name="pageBg" id="pageBgCol" value="color" checked
+                       onchange="togglePageBg();update()">
+                <label for="pageBgCol">🎨 色で指定</label>
+              </div>
+              <div class="radio-tab">
+                <input type="radio" name="pageBg" id="pageBgImg" value="image"
+                       onchange="togglePageBg();update()">
+                <label for="pageBgImg">🖼 画像で指定</label>
+              </div>
+            </div>
+
+            <div id="pageBgColFields">
+              <div class="color-row">
+                <input type="color" class="color-swatch" id="bgCSw" value="#F2F2F7"
+                       oninput="swToText('bgCSw','bgColor');update()">
+                <input type="text" class="field-input color-text" id="bgColor"
+                       placeholder="#F2F2F7" oninput="textToSw('bgColor','bgCSw');update()">
+                <button class="color-clear" onclick="clearColor('bgColor','bgCSw')" title="クリア">✕</button>
+              </div>
+            </div>
+
+            <div id="pageBgImgFields" style="display:none">
+              <input type="text" class="field-input" id="bgImg"
+                     placeholder="例: images/bg-tile.png  または  https://..." oninput="update()">
+              <div class="field-hint">タイル状に繰り返し表示。推奨サイズ: 400 × 400px</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       右パネル: プレビュー / 出力 / 読み込み
+       ============================================================ -->
+  <div>
+
+    <!-- プレビュー -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-head-icon">👁</span>
+        <span class="panel-title">リアルタイムプレビュー</span>
+      </div>
+      <div style="padding-top:12px;">
+        <div class="preview-wrap">
+          <div class="pv-nav" id="pvNav">
+            <div class="pv-icon" id="pvIcon">⚙</div>
+            <span class="pv-nav-name" id="pvName">（サイト名）</span>
+          </div>
+          <div class="pv-hero" id="pvHero">
+            <h2 id="pvH1">（大見出し）</h2>
+            <p id="pvDesc">（サブ説明文）</p>
+          </div>
+          <div class="pv-content" id="pvContent">
+            <div class="pv-cards">
+              <div class="pv-card"><div class="pv-dot" id="pvDot1"></div></div>
+              <div class="pv-card"><div class="pv-dot" id="pvDot2"></div></div>
+              <div class="pv-card"><div class="pv-dot" id="pvDot3"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 生成テキスト + ダウンロード -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-head-icon">📄</span>
+        <span class="panel-title">生成テキスト（Page_specified.txt）</span>
+      </div>
+      <div class="panel-body">
+        <textarea class="output-box" id="outputBox" readonly
+                  placeholder="左のフォームに入力すると&#10;自動生成されます"></textarea>
+        <div class="output-actions">
+          <button class="btn btn-secondary" onclick="copyOutput()">📋 コピー</button>
+          <button class="btn btn-primary" onclick="dlFile()">⬇ ダウンロード</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 既存ファイル読み込み -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-head-icon">📂</span>
+        <span class="panel-title">既存ファイルを読み込んで編集</span>
+      </div>
+      <div class="panel-body">
+        <div class="import-zone" id="importZone">
+          <input type="file" accept=".txt" onchange="onFileSelect(event)">
+          <div class="import-zone-icon">📂</div>
+          <div class="import-zone-text">
+            <strong>クリックしてファイルを選択</strong><br>
+            またはここに .txt ファイルをドロップ
+          </div>
+        </div>
+
+        <div class="paste-label">テキストをそのまま貼り付けて読み込む</div>
+        <textarea class="paste-area" id="pasteArea" rows="5"
+                  placeholder="Page_specified.txt の内容をここに貼り付けてください"></textarea>
+        <button class="btn btn-secondary btn-block" onclick="loadPaste()">
+          📋 貼り付け内容を読み込む
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   カラーピッカー ↔ テキスト同期
+   ============================================================ */
+function swToText(swId, textId) {
+  document.getElementById(textId).value =
+    document.getElementById(swId).value.toUpperCase();
+}
+
+function textToSw(textId, swId) {
+  const val = document.getElementById(textId).value.trim();
+  if (/^#[0-9A-Fa-f]{6}$/.test(val))
+    document.getElementById(swId).value = val;
+}
+
+function clearColor(textId, swId) {
+  document.getElementById(textId).value = '';
+  update();
+}
+
+/* ============================================================
+   絵文字ワンクリックセット
+   ============================================================ */
+function pick(id, emoji) {
+  document.getElementById(id).value = emoji;
+  update();
+}
+
+/* ============================================================
+   背景種別トグル
+   ============================================================ */
+function toggleHeroBg() {
+  const img = document.getElementById('heroBgImg').checked;
+  document.getElementById('heroBgColFields').style.display = img ? 'none' : 'block';
+  document.getElementById('heroBgImgFields').style.display = img ? 'block' : 'none';
+}
+
+function togglePageBg() {
+  const img = document.getElementById('pageBgImg').checked;
+  document.getElementById('pageBgColFields').style.display = img ? 'none' : 'block';
+  document.getElementById('pageBgImgFields').style.display = img ? 'block' : 'none';
+}
+
+/* ============================================================
+   フォーム値取得
+   ============================================================ */
+function v(id) { return (document.getElementById(id)?.value || '').trim(); }
+function radio(name) {
+  return document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+}
+
+/* ============================================================
+   プレビュー更新
+   ============================================================ */
+function updatePreview() {
+  // ナビバー
+  const navBg = v('navColor') || 'rgba(22,22,26,0.92)';
+  document.getElementById('pvNav').style.background = navBg;
+
+  const acc = v('accentColor') || '#0071E3';
+  document.getElementById('pvIcon').style.background = acc;
+  document.getElementById('pvIcon').textContent = v('siteIcon') || '⚙';
+  document.getElementById('pvName').textContent   = v('siteTitle') || '（サイト名）';
+
+  // ヒーロー背景
+  const heroEl = document.getElementById('pvHero');
+  heroEl.style.backgroundImage = '';
+  if (radio('heroBg') === 'image') {
+    const url = v('heroImg');
+    if (url) {
+      heroEl.style.backgroundImage    = `url("${url}")`;
+      heroEl.style.backgroundSize     = 'cover';
+      heroEl.style.backgroundPosition = 'center';
+      heroEl.style.backgroundRepeat   = 'no-repeat';
+      heroEl.style.background         = '';
+    } else {
+      heroEl.style.background = '#333';
+    }
+  } else {
+    const c1 = v('heroC1') || '#16171C';
+    const c2 = v('heroC2');
+    heroEl.style.background = c2
+      ? `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`
+      : c1;
+  }
+
+  // ヒーローテキスト
+  const h1El = document.getElementById('pvH1');
+  h1El.textContent = v('heroTitle') || '（大見出し）';
+  h1El.style.color = v('heroTC') || '#FFFFFF';
+
+  const dEl = document.getElementById('pvDesc');
+  dEl.textContent = v('heroDesc') || '（サブ説明文）';
+  dEl.style.color = v('heroDC') || 'rgba(255,255,255,0.65)';
+
+  // ページ背景
+  const contEl = document.getElementById('pvContent');
+  contEl.style.backgroundImage = '';
+  if (radio('pageBg') === 'image') {
+    const url = v('bgImg');
+    if (url) {
+      contEl.style.backgroundImage  = `url("${url}")`;
+      contEl.style.backgroundRepeat = 'repeat';
+      contEl.style.background       = '';
+    } else {
+      contEl.style.background = '#F2F2F7';
+    }
+  } else {
+    contEl.style.background = v('bgColor') || '#F2F2F7';
+  }
+
+  // ドット色
+  ['pvDot1','pvDot2','pvDot3'].forEach(id => {
+    document.getElementById(id).style.background = acc;
+  });
+}
+
+/* ============================================================
+   テキスト生成
+   ============================================================ */
+function generateText() {
+  const lines = [];
+
+  function add(section, ...vals) {
+    const filled = vals.filter(x => x && x.trim());
+    if (!filled.length) return;
+    lines.push('◆ ' + section);
+    filled.forEach(x => lines.push(x));
+    lines.push('');
+  }
+
+  add('サイト名',           v('siteTitle'));
+  add('サイトアイコン',      v('siteIcon'));
+  add('アクセントカラー',   v('accentColor'));
+  add('ナビ色',             v('navColor'));
+
+  if (radio('heroBg') === 'image') {
+    add('ヘッダー画像', v('heroImg'));
+  } else {
+    add('ヘッダー色', v('heroC1'), v('heroC2') || null);
+  }
+
+  add('ヘッダー文字タイトル', v('heroTitle'));
+  add('ヘッダー文字色',       v('heroTC'));
+  add('ヘッダー文字説明',     v('heroDesc'));
+  add('ヘッダー文字説明色',   v('heroDC'));
+
+  if (radio('pageBg') === 'image') {
+    add('背景画像', v('bgImg'));
+  } else {
+    add('背景色', v('bgColor'));
+  }
+
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function update() {
+  updatePreview();
+  document.getElementById('outputBox').value = generateText();
+}
+
+/* ============================================================
+   コピー / ダウンロード
+   ============================================================ */
+function copyOutput() {
+  const txt = document.getElementById('outputBox').value;
+  if (!txt) { toast('⚠ 出力テキストがありません'); return; }
+  navigator.clipboard.writeText(txt)
+    .then(() => toast('📋 クリップボードにコピーしました'))
+    .catch(() => {
+      document.getElementById('outputBox').select();
+      document.execCommand('copy');
+      toast('📋 コピーしました');
+    });
+}
+
+function dlFile() {
+  const txt = document.getElementById('outputBox').value;
+  if (!txt) { toast('⚠ ダウンロードする内容がありません'); return; }
+  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'Page_specified.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('⬇ ダウンロードを開始しました');
+}
+
+/* ============================================================
+   ファイル / テキスト 読み込み
+   ============================================================ */
+function onFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { parseAndFill(ev.target.result); toast('✅ ファイルを読み込みました'); };
+  reader.readAsText(file, 'UTF-8');
+  e.target.value = '';
+}
+
+function loadPaste() {
+  const txt = document.getElementById('pasteArea').value.trim();
+  if (!txt) { toast('⚠ テキストが入力されていません'); return; }
+  parseAndFill(txt);
+  document.getElementById('pasteArea').value = '';
+  toast('✅ テキストを読み込みました');
+}
+
+/* ============================================================
+   テキストを解析してフォームに反映
+   ============================================================ */
+const _SEC_RE = /^\s*[◆■●▶▷◇□○★☆＊※【\[]+\s*(.+?)(?:[◆■●▶▷◇□○★☆＊※】\]]*)\s*$/;
+
+function parseAndFill(text) {
+  const secs = {};
+  let cur = null;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    const m = line.match(_SEC_RE);
+    if (m) { cur = m[1].trim(); secs[cur] = []; }
+    else if (cur) secs[cur].push(line);
+  }
+
+  function get(...keys) {
+    for (const k of keys) if (secs[k]?.length) return secs[k];
+    return [];
+  }
+
+  function setVal(id, val) {
+    if (val == null) return;
+    document.getElementById(id).value = val;
+  }
+
+  function setCol(textId, swId, val) {
+    if (!val) return;
+    setVal(textId, val);
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) setVal(swId, val);
+  }
+
+  setVal('siteTitle', get('サイト名','ブランド名','site_title')[0]);
+  setVal('siteIcon',  get('サイトアイコン','ブランドアイコン','site_icon')[0]);
+  setCol('accentColor','accentSw', get('アクセントカラー','ボタン色','accent_color')[0]);
+  setCol('navColor',  'navSw',    get('ナビ色','ナビゲーション色','nav_color')[0]);
+
+  const heroImgVal = get('ヘッダー画像','hero_image')[0];
+  if (heroImgVal) {
+    document.getElementById('heroBgImg').checked = true;
+    setVal('heroImg', heroImgVal);
+  } else {
+    document.getElementById('heroBgCol').checked = true;
+    const cols = get('ヘッダー色','ヘッダー背景色','hero_color');
+    setCol('heroC1','heroC1Sw', cols[0]);
+    setCol('heroC2','heroC2Sw', cols[1]);
+  }
+  toggleHeroBg();
+
+  setVal('heroTitle', get('ヘッダー文字タイトル','タイトル','hero_title')[0]);
+  setCol('heroTC','heroTCSw',  get('ヘッダー文字色','タイトル色','hero_title_color')[0]);
+  setVal('heroDesc',  get('ヘッダー文字説明','説明文','hero_desc')[0]);
+  setCol('heroDC','heroDCSw',  get('ヘッダー文字説明色','説明文色','hero_desc_color')[0]);
+
+  const bgImgVal = get('背景画像','background_image','bg_image')[0];
+  if (bgImgVal) {
+    document.getElementById('pageBgImg').checked = true;
+    setVal('bgImg', bgImgVal);
+  } else {
+    document.getElementById('pageBgCol').checked = true;
+    setCol('bgColor','bgCSw', get('背景色','background_color','bg_color')[0]);
+  }
+  togglePageBg();
+
+  update();
+}
+
+/* ============================================================
+   ドラッグ & ドロップ
+   ============================================================ */
+const zone = document.getElementById('importZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { parseAndFill(ev.target.result); toast('✅ ファイルを読み込みました'); };
+  reader.readAsText(file, 'UTF-8');
+});
+
+/* ============================================================
+   トースト通知
+   ============================================================ */
+let _tt;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+/* ============================================================
+   初期化
+   ============================================================ */
+update();
+</script>
+</body>
+</html>

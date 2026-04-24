@@ -220,7 +220,12 @@ async function _fetchAllRepos() {
     page += 1;
   }
 
-  return repos.filter(repo => repo && !repo.fork && !repo.archived && !repo.private);
+  // フォーク・アーカイブ・非公開に加え、ポータルリポジトリ自身も除外
+  const portalRepo = GH_CONFIG.portalRepo || 'app-portal';
+  return repos.filter(repo =>
+    repo && !repo.fork && !repo.archived && !repo.private &&
+    repo.name !== portalRepo
+  );
 }
 
 async function _repoToApp(repo) {
