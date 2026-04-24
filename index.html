@@ -98,6 +98,7 @@ function _normalize(app, i) {
     lastUpdated:      app.lastUpdated      || '-',
     targets:          Array.isArray(app.targets) ? app.targets : [],
     requirements:     app.requirements     || '-',
+    language:         app.language         || '-',
     features:         Array.isArray(app.features) ? app.features : [],
     images:           Array.isArray(app.images) ? app.images : [],
     downloads:        Array.isArray(app.downloads) && app.downloads.length
@@ -151,7 +152,7 @@ function iconHTML(app, large = false) {
   const cls      = large ? 'modal-icon' : 'app-icon';
   if (app.iconImage) {
     return `<img src="${app.iconImage}" alt="" class="${cls}"
-              style="width:${size}px;height:${size}px;">`;
+              style="width:${size}px;height:${size}px;object-fit:contain;background:transparent;">`;
   }
   return `<div class="${cls}"
     style="background:${app.iconColor};width:${size}px;height:${size}px;font-size:${fontSize}px;">
@@ -169,17 +170,9 @@ function cardHTML(app) {
 
   let imagesHTML = '';
   if (images.length > 0) {
-    const slides = images.map(src =>
-      `<img class="card-slide-img" src="${src}" alt="" loading="lazy">`
-    ).join('');
-    const dots = images.length > 1
-      ? `<div class="slide-dots">${images.map((_, i) =>
-          `<span class="slide-dot${i === 0 ? ' active' : ''}"></span>`
-        ).join('')}</div>`
-      : '';
+    // カードは1枚目のみ静的表示 (スライドはモーダルのみ)
     imagesHTML = `<div class="card-images-wrap">
-      <div class="card-images-track">${slides}</div>
-      ${dots}
+      <img class="card-single-img" src="${images[0]}" alt="" loading="lazy">
     </div>`;
   }
 
@@ -321,10 +314,14 @@ function openModal(id) {
   <ul class="features-list">${features || '<li>—</li>'}</ul>
 </div>
 
-<div class="modal-two-col">
+<div class="modal-three-col">
   <div class="modal-section">
     <div class="section-label">対象部署</div>
     <div class="target-chips">${targets || '<span class="chip">—</span>'}</div>
+  </div>
+  <div class="modal-section">
+    <div class="section-label">作成言語</div>
+    <div class="requirements-box">${app.language}</div>
   </div>
   <div class="modal-section">
     <div class="section-label">動作環境</div>
@@ -432,7 +429,69 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 renderGrid();
 
 /* ============================================================
-   GitHub から自動読み込み (非同期)
+   Page_specified.txt の設定をページに適用
+   ============================================================ */
+function applyPageConfig(cfg) {
+  if (!cfg) return;
+  const root = document.documentElement;
+
+  // CSS カスタムプロパティの上書き
+  if (cfg.accentColor) root.style.setProperty('--accent', cfg.accentColor);
+  if (cfg.bgColor && !cfg.bgImage) root.style.setProperty('--bg', cfg.bgColor);
+
+  // ナビゲーションバー
+  if (cfg.navColor) {
+    document.querySelector('.site-header').style.background = cfg.navColor;
+  }
+  if (cfg.siteTitle) {
+    const el = document.querySelector('.brand-name');
+    if (el) el.textContent = cfg.siteTitle;
+    document.title = cfg.siteTitle;
+  }
+  if (cfg.siteIcon) {
+    const el = document.querySelector('.brand-icon');
+    if (el) el.textContent = cfg.siteIcon;
+  }
+
+  // ヒーローエリア背景
+  const heroEl = document.querySelector('.hero');
+  if (heroEl) {
+    if (cfg.heroImage) {
+      heroEl.style.backgroundImage    = `url("${cfg.heroImage}")`;
+      heroEl.style.backgroundSize     = 'cover';
+      heroEl.style.backgroundPosition = 'center';
+      heroEl.style.backgroundRepeat   = 'no-repeat';
+    } else if (cfg.heroColor1 && cfg.heroColor2) {
+      heroEl.style.background = `linear-gradient(135deg, ${cfg.heroColor1} 0%, ${cfg.heroColor2} 100%)`;
+    } else if (cfg.heroColor1) {
+      heroEl.style.background = cfg.heroColor1;
+    }
+  }
+
+  // ヒーローエリア テキスト
+  const heroH1 = document.querySelector('.hero h1');
+  if (heroH1) {
+    if (cfg.heroTitle)      heroH1.textContent = cfg.heroTitle;
+    if (cfg.heroTitleColor) heroH1.style.color = cfg.heroTitleColor;
+  }
+  const heroP = document.querySelector('.hero p');
+  if (heroP) {
+    if (cfg.heroDesc)      heroP.textContent = cfg.heroDesc;
+    if (cfg.heroDescColor) heroP.style.color = cfg.heroDescColor;
+  }
+
+  // ページ背景
+  if (cfg.bgImage) {
+    document.body.style.backgroundImage    = `url("${cfg.bgImage}")`;
+    document.body.style.backgroundRepeat   = 'repeat';
+    document.body.style.backgroundPosition = 'left top';
+  } else if (cfg.bgColor) {
+    document.body.style.background = cfg.bgColor;
+  }
+}
+
+/* ============================================================
+   GitHub から自動読み込み (Page設定 & アプリ一覧を並行取得)
    ============================================================ */
 (async () => {
   if (typeof GH_loadApps !== 'function') return;
@@ -441,7 +500,18 @@ renderGrid();
   loadingEl.removeAttribute('hidden');
 
   try {
-    const ghApps = await GH_loadApps();
+    // ページ設定とアプリ一覧を並行取得
+    const [pageConfig, ghApps] = await Promise.all([
+      typeof GH_loadPageConfig === 'function'
+        ? GH_loadPageConfig().catch(() => null)
+        : Promise.resolve(null),
+      GH_loadApps().catch(() => []),
+    ]);
+
+    // ページ外観を先に適用
+    applyPageConfig(pageConfig);
+
+    // アプリカードを更新
     if (ghApps.length > 0) {
       normalizedApps = ghApps;
       buildCategories();

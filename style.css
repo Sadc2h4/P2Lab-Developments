@@ -582,6 +582,12 @@ body {
   gap: 20px;
 }
 
+.modal-three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+
 .target-chips {
   display: flex;
   flex-wrap: wrap;
@@ -641,7 +647,7 @@ body {
 .dl-secondary:hover { background: #E5E5EA; }
 
 /* ===========================
-   Card image slideshow
+   Card image (1枚目を静的表示)
    =========================== */
 
 /* カードに画像がある場合は overflow: hidden でカードの角に合わせてクリップ */
@@ -651,24 +657,16 @@ body {
 
 .card-images-wrap {
   margin: -22px -22px 0;   /* カードのpadding分を打ち消して端まで伸ばす */
-  height: 160px;
   position: relative;
   background: var(--bg);
   flex-shrink: 0;
 }
 
-.card-images-track {
-  display: flex;
-  height: 100%;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-}
-
-.card-slide-img {
-  flex-shrink: 0;
+/* 横幅100%に合わせ、縦幅は画像の比率に従って自動伸縮 */
+.card-single-img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
 }
 
 /* ===========================
@@ -764,6 +762,6 @@ body {
   .modal-sheet       { border-radius: 26px 26px 0 0; max-height: 93vh; }
   .modal-body        { padding: 4px 20px 32px; }
   .modal-two-col     { grid-template-columns: 1fr; }
+  .modal-three-col   { grid-template-columns: 1fr; }
   .modal-images-wrap { height: 200px; }
-  .card-images-wrap  { height: 140px; }
 }

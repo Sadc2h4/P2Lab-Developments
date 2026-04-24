@@ -3,12 +3,14 @@
    ============================================================ */
 
 const GH_CONFIG = {
-  owner: 'Sangyoui-admin',
-  ownerType: 'user',
-  cacheMinutes: 5,
+  owner:         'Sangyoui-admin',
+  ownerType:     'user',
+  portalRepo:    'app-portal', // Page_specified.txt を置くリポジトリ名
+  portalBranch:  'main',       // そのリポジトリのブランチ
+  cacheMinutes:  5,
   slideInterval: 6000,
-  maxImages: 12,
-  cacheVersion: '2026-04-24-v1',
+  maxImages:     12,
+  cacheVersion:  '2026-04-24-v1',
 };
 
 {
@@ -125,6 +127,7 @@ function _parseAppInfo(infoText, overviewText) {
     ? targetText.split(/[,、，/／\n]+/).map(item => item.trim()).filter(Boolean)
     : [];
   const requirements = _getSectionLines(mergedSections, ['動作環境', '環境', 'Requirements']).join(' / ');
+  const language     = _getSectionLines(mergedSections, ['作成言語', '開発言語', '使用言語', 'Language']).join(' / ');
   const summaryLines = _getSectionLines(mergedSections, ['概要', 'About', 'Overview', '説明']);
   const overviewLines = _getSectionLines(mergedSections, ['Overview', '補足', '詳細']);
 
@@ -136,6 +139,7 @@ function _parseAppInfo(infoText, overviewText) {
     features: featureLines,
     targets,
     requirements: requirements.trim() || '-',
+    language: language.trim() || '-',
     overview: overviewLines.join('\n').trim(),
   };
 }
@@ -239,52 +243,69 @@ async function _repoToApp(repo) {
   const inlineImages = _sortCardImages(infoEntries);
   const referencedImages = await _readCardImageRefs(owner, repo.name, branch, infoEntries);
   const images = [...referencedImages, ...inlineImages].slice(0, GH_CONFIG.maxImages);
-  const repoAbout = (repo.description || '').trim();
+
+  // .ico ファイルをアイコンとして使用
+  // DLpage_info/ 内を優先確認、なければリポジトリルートを確認
+  let iconImage = null;
+  const icoInInfo = infoEntries.find(e => e.type === 'file' && /\.ico$/i.test(e.name));
+  if (icoInInfo) {
+    iconImage = icoInInfo.download_url;
+  } else {
+    const rootEntries = await _ghDir(owner, repo.name, '', branch);
+    if (rootEntries) {
+      const icoInRoot = rootEntries.find(e => e.type === 'file' && /\.ico$/i.test(e.name));
+      if (icoInRoot) iconImage = icoInRoot.download_url;
+    }
+  }
+
+  // About欄の "//" を改行として扱う (Aboutは1行制限のため改行代替記法)
+  const repoAbout = (repo.description || '').trim().replace(/\s*\/\/\s*/g, '\n');
   const summary = parsed.summary || repoAbout || '概要は未設定です。';
-  const shortDescription = parsed.shortDescription || repoAbout || '詳細情報を参照してください。';
+  const shortDescription = parsed.shortDescription || (repo.description || '').trim().split('//')[0].trim() || '詳細情報を参照してください。';
   const version = (release?.version || '').replace(/^v/i, '') || '-';
   const lastUpdated = release?.publishedAt || (repo.updated_at || '').slice(0, 10) || '-';
 
-  const primaryDownloadUrl =
-    release?.assets?.[0]?.url ||
-    release?.pageUrl ||
-    release?.zipUrl ||
-    repo.html_url;
-
-  const downloads = [
-    {
-      label: release?.version ? '最新版をダウンロード (' + release.version + ')' : 'リポジトリを開く',
-      url: primaryDownloadUrl,
-      primary: true,
-    },
-  ];
-
-  if (release?.pageUrl && release.pageUrl !== primaryDownloadUrl) {
+  // ダウンロードボタンの組み立て (GitHubリポジトリを開くは最後に1つだけ)
+  const downloads = [];
+  if (release?.assets?.[0]?.url) {
     downloads.push({
-      label: 'リリース詳細を開く',
-      url: release.pageUrl,
-      primary: false,
+      label:   '最新版をダウンロード (' + release.version + ')',
+      url:     release.assets[0].url,
+      primary: true,
+    });
+    release.assets.slice(1).forEach(asset => {
+      downloads.push({ label: asset.name, url: asset.url, primary: false });
+    });
+  } else if (release?.pageUrl) {
+    downloads.push({
+      label:   'リリースページを開く (' + release.version + ')',
+      url:     release.pageUrl,
+      primary: true,
     });
   }
-
-  downloads.push({
-    label: 'リポジトリを開く',
-    url: repo.html_url,
-    primary: false,
-  });
+  // GitHubリポジトリへのリンクを重複なしで末尾に追加
+  if (!downloads.some(d => d.url === repo.html_url)) {
+    downloads.push({
+      label:   'GitHubリポジトリを開く',
+      url:     repo.html_url,
+      primary: downloads.length === 0, // 他にボタンがなければ primary にする
+    });
+  }
 
   return {
     id: repo.name,
     name: parsed.appName || repo.name,
     shortDescription,
     description: parsed.overview ? summary + '\n\n' + parsed.overview : summary,
-    icon: '📦',
-    iconColor: '#2B78D3',
+    icon:       '📦',
+    iconColor:  '#2B78D3',
+    iconImage,
     category: parsed.category || '社内アプリ',
     version,
     lastUpdated,
     targets: parsed.targets.length ? parsed.targets : ['全部署'],
     requirements: parsed.requirements,
+    language: parsed.language,
     features: parsed.features,
     downloads,
     images,
@@ -354,4 +375,79 @@ function _initSlide(cardEl) {
 
 window.GH_initSlides = function () {
   document.querySelectorAll('.app-card').forEach(_initSlide);
+};
+
+/* ============================================================
+   リポジトリ内アセットの URL 解決ヘルパー
+   ============================================================ */
+function _resolveAsset(owner, repo, branch, value) {
+  if (!value) return null;
+  const v = value.trim();
+  if (!v) return null;
+  if (/^https?:\/\//i.test(v)) return v;
+  return (
+    'https://raw.githubusercontent.com/' +
+    owner + '/' + repo + '/' + branch + '/' +
+    v.replace(/^\.?\//, '')
+  );
+}
+
+/* ============================================================
+   ページ外観設定ファイル (Page_specified.txt) の取得と解析
+   ============================================================
+   【Page_specified.txt で指定できる項目】
+
+   ◆ サイト名               ← 左上ブランド名 (例: 社内ツールポータル)
+   ◆ サイトアイコン         ← 左上アイコン絵文字 (例: 🏢)
+   ◆ アクセントカラー       ← ボタン・リンク色 (例: #0071E3)
+   ◆ ナビ色                 ← 上部ナビバー背景色 (例: #1A1A2E)
+
+   ◆ ヘッダー色             ← ヒーロー背景色 (1行=単色 / 2行=グラデーション)
+   ◆ ヘッダー画像           ← ヒーロー背景画像 (URL or リポジトリ内パス)
+                               推奨サイズ: 1920×220px (比率 約8.7:1)
+   ◆ ヘッダー文字タイトル   ← ヒーローの大見出し
+   ◆ ヘッダー文字色         ← 大見出しの文字色
+   ◆ ヘッダー文字説明       ← ヒーローのサブ説明文
+   ◆ ヘッダー文字説明色     ← サブ説明文の文字色
+
+   ◆ 背景色                 ← ページ背景色
+   ◆ 背景画像               ← ページ背景画像 (タイル繰り返し / 推奨: 400×400px)
+   ============================================================ */
+window.GH_loadPageConfig = async function () {
+  const owner  = GH_CONFIG.owner;
+  const repo   = GH_CONFIG.portalRepo   || 'app-portal';
+  const branch = GH_CONFIG.portalBranch || 'main';
+
+  // main → master の順にフォールバック
+  const text =
+    (await _ghText(owner, repo, 'Page_specified.txt', branch)) ||
+    (await _ghText(owner, repo, 'Page_specified.txt', 'master'));
+  if (!text) return null;
+
+  const sections = _parseSections(text);
+  const get = (...keys) => _getSectionLines(sections, keys);
+  const asset = v => _resolveAsset(owner, repo, branch, v);
+
+  const heroColors = get('ヘッダー色', 'ヘッダー背景色', 'hero_color');
+
+  return {
+    // ナビゲーションバー
+    siteTitle:      get('サイト名',       'ブランド名',       'site_title')[0]    || null,
+    siteIcon:       get('サイトアイコン', 'ブランドアイコン', 'site_icon')[0]     || null,
+    accentColor:    get('アクセントカラー','ボタン色',        'accent_color')[0]  || null,
+    navColor:       get('ナビ色',         'ナビゲーション色', 'nav_color')[0]     || null,
+
+    // ヒーローエリア
+    heroColor1:     heroColors[0] || null,
+    heroColor2:     heroColors[1] || null,
+    heroImage:      asset(get('ヘッダー画像', 'hero_image')[0]),
+    heroTitle:      get('ヘッダー文字タイトル', 'タイトル',     'hero_title')[0]  || null,
+    heroTitleColor: get('ヘッダー文字色',       'タイトル色',   'hero_title_color')[0] || null,
+    heroDesc:       get('ヘッダー文字説明',     '説明文',       'hero_desc')[0]   || null,
+    heroDescColor:  get('ヘッダー文字説明色',   '説明文色',     'hero_desc_color')[0]  || null,
+
+    // ページ背景
+    bgColor:        get('背景色', 'background_color', 'bg_color')[0] || null,
+    bgImage:        asset(get('背景画像', 'background_image', 'bg_image')[0]),
+  };
 };
