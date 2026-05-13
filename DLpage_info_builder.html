@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DLpage_info ビルド補助</title>
+  <style>
+    :root {
+      --bg: #F2F2F7;
+      --card: #FFFFFF;
+      --accent: #0071E3;
+      --accent-dk: #005BBF;
+      --text-1: #1D1D1F;
+      --text-2: #6E6E73;
+      --text-3: #AEAEB2;
+      --border: #E5E5EA;
+      --shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+      --radius: 14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    button, input, textarea, select { font: inherit; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI",
+                   "Noto Sans JP", sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(22,22,26,0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .app-header h1 { color: #fff; font-size: 15px; font-weight: 700; }
+    .badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 20px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 430px 1fr;
+      gap: 20px;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel + .panel { margin-top: 20px; }
+    .panel-head {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-title { font-size: 13px; font-weight: 700; }
+    .panel-body { padding: 20px; }
+
+    .form-section { margin-bottom: 26px; }
+    .form-section:last-child { margin-bottom: 0; }
+    .sec-title {
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-3);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+
+    .field { margin-bottom: 13px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .opt {
+      font-size: 10px;
+      color: var(--text-3);
+      background: var(--bg);
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .field-input, .field-textarea {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text-1);
+      outline: none;
+      transition: border-color 0.15s;
+      font-size: 13px;
+    }
+    .field-input { padding: 8px 12px; }
+    .field-textarea {
+      padding: 10px 12px;
+      resize: vertical;
+      min-height: 84px;
+    }
+    .field-input:focus, .field-textarea:focus { border-color: var(--accent); }
+    .field-hint { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+
+    .inline-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 8px 13px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.08s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-dk); }
+    .btn-secondary { background: var(--bg); color: var(--text-1); }
+    .btn-secondary:hover { background: #E5E5EA; }
+    .btn-danger { background: #FFE5E5; color: #B42318; }
+    .btn-danger:hover { background: #FFD6D6; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+    .image-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 36px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .image-label {
+      font-size: 11px;
+      color: var(--text-2);
+      font-weight: 700;
+    }
+
+    .preview-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .preview-image {
+      height: 190px;
+      background: linear-gradient(135deg, #EEF2F7, #DDE7F4);
+      display: grid;
+      place-items: center;
+      color: var(--text-3);
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .preview-body { padding: 18px; }
+    .preview-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .preview-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .preview-icon img { width: 100%; height: 100%; object-fit: contain; }
+    .preview-name { font-size: 19px; font-weight: 800; }
+    .preview-cat {
+      display: inline-block;
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--accent);
+      background: rgba(0,113,227,0.09);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .preview-desc {
+      font-size: 13px;
+      color: var(--text-2);
+      white-space: pre-wrap;
+      margin-bottom: 15px;
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .preview-info {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 10px;
+      min-width: 0;
+    }
+    .preview-info-label {
+      color: var(--text-3);
+      font-size: 10px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .preview-info-value {
+      color: var(--text-1);
+      font-size: 12px;
+      word-break: break-word;
+    }
+    .feature-list {
+      display: grid;
+      gap: 7px;
+      padding-left: 18px;
+      color: var(--text-1);
+      font-size: 13px;
+    }
+
+    .output-box {
+      width: 100%;
+      min-height: 210px;
+      resize: vertical;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: #FAFAFC;
+      padding: 12px;
+      font: 12px/1.6 "SF Mono", "Consolas", monospace;
+      color: var(--text-1);
+      outline: none;
+    }
+    .output-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .output-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      border: 1.5px solid var(--border);
+      background: #fff;
+      color: var(--text-2);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .folder-box {
+      background: #FAFAFC;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font: 12px/1.7 "SF Mono", "Consolas", monospace;
+      color: var(--text-2);
+      white-space: pre-wrap;
+    }
+
+    .import-zone {
+      position: relative;
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      color: var(--text-2);
+      background: #FAFAFC;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .import-zone input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(60px);
+      background: rgba(29,29,31,0.92);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s, opacity 0.25s;
+      z-index: 1000;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 940px) {
+      .layout { grid-template-columns: 1fr; padding: 16px; }
+      .preview-grid { grid-template-columns: 1fr; }
+      .inline-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<header class="app-header">
+  <h1>DLpage_info ビルド補助</h1>
+  <span class="badge">アプリカード設定</span>
+</header>
+
+<div class="layout">
+  <div>
+    <div class="panel">
+      <div class="panel-head">
+        <span>⚙</span>
+        <span class="panel-title">設定項目</span>
+      </div>
+      <div class="panel-body">
+        <div class="form-section">
+          <div class="sec-title">基本情報</div>
+
+          <div class="field">
+            <div class="field-label">表示アプリ名 <span class="opt">推奨</span></div>
+            <input id="appName" class="field-input" type="text" placeholder="例: Sample Tool" oninput="update()">
+          </div>
+
+          <div class="inline-row">
+            <div class="field">
+              <div class="field-label">カテゴリ <span class="opt">省略可</span></div>
+              <input id="category" class="field-input" type="text" placeholder="例: ツール" oninput="update()">
+            </div>
+            <div class="field">
+              <div class="field-label">アイコンファイル <span class="opt">省略可</span></div>
+              <input id="iconFile" class="field-input" type="text" placeholder="例: icon.ico" oninput="update()">
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">概要 <span class="opt">カード説明</span></div>
+            <textarea id="summary" class="field-textarea" rows="4" placeholder="カードとモーダル概要の先頭に表示する説明" oninput="update()"></textarea>
+          </div>
+
+          <div class="field">
+            <div class="field-label">詳細 / 補足 <span class="opt">モーダル追加説明</span></div>
+            <textarea id="detail" class="field-textarea" rows="5" placeholder="モーダル概要に追加表示したい説明" oninput="update()"></textarea>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="sec-title">モーダル表示項目</div>
+
+          <div class="field">
+            <div class="field-label">主な機能 <span class="opt">1行1項目</span></div>
+            <textarea id="features" class="field-textarea" rows="5" placeholder="機能1&#10;機能2&#10;機能3" oninput="update()"></textarea>
+          </div>
+
+          <div class="inline-row">
+            <div class="field">
+              <div class="field-label">作成言語 <span class="opt">省略可</span></div>
+              <input id="language" class="field-input" type="text" placeholder="例: Python / JavaScript" oninput="update()">
+            </div>
+            <div class="field">
+              <div class="field-label">動作環境 <span class="opt">省略可</span></div>
+              <input id="requirements" class="field-input" type="text" placeholder="例: Windows 11" oninput="update()">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="sec-title">カード / モーダル画像</div>
+
+          <div id="imageRows"></div>
+          <div class="btn-row">
+            <button class="btn btn-secondary" type="button" onclick="addImageRow()">画像指定を追加</button>
+            <button class="btn btn-secondary" type="button" onclick="setDefaultImages()">標準名を入力</button>
+          </div>
+          <div class="field-hint">`Card_image1.png` のような画像ファイルはそのまま `DLpage_info` に置けます。別パスの画像を参照したい場合は `Card_image1.txt` を生成してください。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="panel-head">
+        <span>👁</span>
+        <span class="panel-title">モーダル表示プレビュー</span>
+      </div>
+      <div class="panel-body">
+        <div class="preview-card">
+          <div class="preview-image" id="previewImage">画像プレビュー</div>
+          <div class="preview-body">
+            <div class="preview-top">
+              <div class="preview-icon" id="previewIcon">📦</div>
+              <div>
+                <div class="preview-cat" id="previewCategory">アプリ</div>
+                <div class="preview-name" id="previewName">アプリ名</div>
+              </div>
+            </div>
+            <div class="preview-desc" id="previewDesc">概要がここに表示されます。</div>
+            <div class="preview-grid">
+              <div class="preview-info">
+                <div class="preview-info-label">作成言語</div>
+                <div class="preview-info-value" id="previewLanguage">-</div>
+              </div>
+              <div class="preview-info">
+                <div class="preview-info-label">動作環境</div>
+                <div class="preview-info-value" id="previewRequirements">-</div>
+              </div>
+            </div>
+            <ul class="feature-list" id="previewFeatures"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>📄</span>
+        <span class="panel-title">生成テキスト</span>
+      </div>
+      <div class="panel-body">
+        <div class="output-tabs" id="outputTabs"></div>
+        <textarea id="outputBox" class="output-box" readonly></textarea>
+        <div class="output-actions">
+          <button class="btn btn-secondary" onclick="copyCurrent()">コピー</button>
+          <button class="btn btn-primary" onclick="downloadCurrent()">現在のファイルをダウンロード</button>
+          <button class="btn btn-secondary" onclick="downloadDLpageInfoFolder()">DLpage_infoフォルダを作成してダウンロード</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>📁</span>
+        <span class="panel-title">配置イメージ</span>
+      </div>
+      <div class="panel-body">
+        <div class="folder-box" id="folderBox"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>📂</span>
+        <span class="panel-title">既存ファイルを読み込む</span>
+      </div>
+      <div class="panel-body">
+        <div class="import-zone">
+          <input type="file" accept=".txt" onchange="onFileSelect(event)">
+          application_info.txt / 旧 Overview.txt / Card_image*.txt を選択
+        </div>
+        <textarea id="pasteArea" class="field-textarea" rows="5" placeholder="既存テキストを貼り付け"></textarea>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="loadPaste('application')">application_info として読み込み</button>
+          <button class="btn btn-secondary" onclick="loadPaste('overview')">旧 Overview として詳細へ読み込み</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let imageCount = 0;
+let currentOutput = 'application_info.txt';
+let outputs = {};
+
+function el(id) { return document.getElementById(id); }
+function v(id) { return (el(id)?.value || '').trim(); }
+function lines(id) {
+  return v(id).split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+}
+
+function addSection(out, name, values) {
+  const filled = Array.isArray(values)
+    ? values.map(x => (x || '').trim()).filter(Boolean)
+    : [(values || '').trim()].filter(Boolean);
+  if (!filled.length) return;
+  out.push('◆ ' + name);
+  filled.forEach(x => out.push(x));
+  out.push('');
+}
+
+function generateApplicationInfo() {
+  const out = [];
+  addSection(out, '表示アプリ名', v('appName'));
+  addSection(out, 'カテゴリ', v('category'));
+  addSection(out, '概要', v('summary').split(/\r?\n/));
+  addSection(out, '詳細', v('detail').split(/\r?\n/));
+  addSection(out, '主な機能', lines('features').map(x => '・' + x.replace(/^[・\-*•\d.]+\s*/, '')));
+  addSection(out, '作成言語', v('language'));
+  addSection(out, '動作環境', v('requirements'));
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function getImageValues() {
+  return Array.from(document.querySelectorAll('[data-image-input]'))
+    .map((input, index) => ({ index: index + 1, value: input.value.trim() }))
+    .filter(item => item.value);
+}
+
+function buildOutputs() {
+  const result = {
+    'application_info.txt': generateApplicationInfo(),
+  };
+
+  getImageValues().forEach(item => {
+    if (!/^Card_image\d+\.(png|jpg|jpeg|webp|gif)$/i.test(item.value)) {
+      result['Card_image' + item.index + '.txt'] = item.value;
+    }
+  });
+
+  return result;
+}
+
+function updateOutputs() {
+  outputs = buildOutputs();
+  const tabs = Object.keys(outputs).filter(name => outputs[name]);
+  if (!tabs.includes(currentOutput)) currentOutput = tabs[0] || 'application_info.txt';
+
+  el('outputTabs').innerHTML = tabs.map(name =>
+    '<button class="tab-btn' + (name === currentOutput ? ' active' : '') +
+    '" onclick="selectOutput(\'' + name + '\')">' + name + '</button>'
+  ).join('');
+  el('outputBox').value = outputs[currentOutput] || '';
+}
+
+function selectOutput(name) {
+  currentOutput = name;
+  updateOutputs();
+}
+
+function updatePreview() {
+  const firstImage = getImageValues()[0]?.value || '';
+  const imageEl = el('previewImage');
+  if (firstImage && /\.(png|jpg|jpeg|webp|gif|svg)(\?.*)?$/i.test(firstImage)) {
+    imageEl.innerHTML = '<img src="' + escapeAttr(firstImage) + '" alt="">';
+  } else {
+    imageEl.textContent = firstImage || '画像プレビュー';
+  }
+
+  const iconFile = v('iconFile');
+  const iconEl = el('previewIcon');
+  if (iconFile && /\.(ico|png|jpg|jpeg|webp|gif|svg)(\?.*)?$/i.test(iconFile)) {
+    iconEl.innerHTML = '<img src="' + escapeAttr(iconFile) + '" alt="">';
+    iconEl.style.background = 'transparent';
+  } else {
+    iconEl.textContent = '📦';
+    iconEl.style.background = 'var(--accent)';
+  }
+
+  el('previewName').textContent = v('appName') || 'アプリ名';
+  el('previewCategory').textContent = v('category') || 'アプリ';
+  el('previewDesc').textContent = [v('summary'), v('detail')].filter(Boolean).join('\n\n') || '概要がここに表示されます。';
+  el('previewLanguage').textContent = v('language') || '-';
+  el('previewRequirements').textContent = v('requirements') || '-';
+
+  const featureItems = lines('features');
+  el('previewFeatures').innerHTML = featureItems.length
+    ? featureItems.map(item => '<li>' + escapeHtml(item.replace(/^[・\-*•\d.]+\s*/, '')) + '</li>').join('')
+    : '<li>主な機能がここに表示されます。</li>';
+}
+
+function updateFolderBox() {
+  const files = ['DLpage_info/', '  application_info.txt'];
+  const imageValues = getImageValues();
+  imageValues.forEach(item => {
+    if (/^Card_image\d+\.(png|jpg|jpeg|webp|gif)$/i.test(item.value)) {
+      files.push('  ' + item.value);
+    } else {
+      files.push('  Card_image' + item.index + '.txt');
+    }
+  });
+  if (v('iconFile')) files.push('  ' + v('iconFile'));
+  el('folderBox').textContent = files.join('\n');
+}
+
+function update() {
+  updatePreview();
+  updateOutputs();
+  updateFolderBox();
+}
+
+function addImageRow(value = '') {
+  imageCount += 1;
+  const row = document.createElement('div');
+  row.className = 'image-row';
+  row.innerHTML =
+    '<div class="image-label">画像 ' + imageCount + '</div>' +
+    '<input class="field-input" data-image-input type="text" value="' + escapeAttr(value) +
+    '" placeholder="Card_image' + imageCount + '.png または images/screenshot.png" oninput="update()">' +
+    '<button class="btn btn-danger" type="button" onclick="removeImageRow(this)">×</button>';
+  el('imageRows').appendChild(row);
+  update();
+}
+
+function removeImageRow(button) {
+  button.closest('.image-row').remove();
+  update();
+}
+
+function setDefaultImages() {
+  if (!document.querySelector('[data-image-input]')) {
+    addImageRow('Card_image1.png');
+    addImageRow('Card_image2.png');
+    addImageRow('Card_image3.png');
+    return;
+  }
+  Array.from(document.querySelectorAll('[data-image-input]')).forEach((input, index) => {
+    input.value = 'Card_image' + (index + 1) + '.png';
+  });
+  update();
+}
+
+function copyCurrent() {
+  const text = el('outputBox').value;
+  if (!text) { toast('出力テキストがありません'); return; }
+  navigator.clipboard.writeText(text)
+    .then(() => toast('コピーしました'))
+    .catch(() => {
+      el('outputBox').select();
+      document.execCommand('copy');
+      toast('コピーしました');
+    });
+}
+
+function downloadCurrent() {
+  const text = outputs[currentOutput] || '';
+  if (!text) { toast('ダウンロードする内容がありません'); return; }
+  downloadFile(currentOutput, text);
+}
+
+function downloadDLpageInfoFolder() {
+  const files = Object.entries(outputs).filter(([, text]) => text);
+  if (!files.length) { toast('ダウンロードする内容がありません'); return; }
+  downloadZip('DLpage_info.zip', files.map(([name, text]) => ({
+    path: 'DLpage_info/' + name,
+    text,
+  })));
+  toast('DLpage_info.zip をダウンロードします');
+}
+
+function downloadFile(name, text) {
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function downloadZip(name, files) {
+  const zipBlob = createZip(files);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(zipBlob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function createZip(files) {
+  const encoder = new TextEncoder();
+  const chunks = [];
+  const centralChunks = [];
+  let offset = 0;
+
+  files.forEach(file => {
+    const nameBytes = encoder.encode(file.path);
+    const data = encoder.encode(file.text);
+    const crc = crc32(data);
+    const dateTime = dosDateTime(new Date());
+
+    const localHeader = new Uint8Array(30 + nameBytes.length);
+    const localView = new DataView(localHeader.buffer);
+    localView.setUint32(0, 0x04034b50, true);
+    localView.setUint16(4, 20, true);
+    localView.setUint16(6, 0x0800, true);
+    localView.setUint16(8, 0, true);
+    localView.setUint16(10, dateTime.time, true);
+    localView.setUint16(12, dateTime.date, true);
+    localView.setUint32(14, crc, true);
+    localView.setUint32(18, data.length, true);
+    localView.setUint32(22, data.length, true);
+    localView.setUint16(26, nameBytes.length, true);
+    localView.setUint16(28, 0, true);
+    localHeader.set(nameBytes, 30);
+    chunks.push(localHeader, data);
+
+    const centralHeader = new Uint8Array(46 + nameBytes.length);
+    const centralView = new DataView(centralHeader.buffer);
+    centralView.setUint32(0, 0x02014b50, true);
+    centralView.setUint16(4, 20, true);
+    centralView.setUint16(6, 20, true);
+    centralView.setUint16(8, 0x0800, true);
+    centralView.setUint16(10, 0, true);
+    centralView.setUint16(12, dateTime.time, true);
+    centralView.setUint16(14, dateTime.date, true);
+    centralView.setUint32(16, crc, true);
+    centralView.setUint32(20, data.length, true);
+    centralView.setUint32(24, data.length, true);
+    centralView.setUint16(28, nameBytes.length, true);
+    centralView.setUint16(30, 0, true);
+    centralView.setUint16(32, 0, true);
+    centralView.setUint16(34, 0, true);
+    centralView.setUint16(36, 0, true);
+    centralView.setUint32(38, 0, true);
+    centralView.setUint32(42, offset, true);
+    centralHeader.set(nameBytes, 46);
+    centralChunks.push(centralHeader);
+
+    offset += localHeader.length + data.length;
+  });
+
+  const centralSize = centralChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const end = new Uint8Array(22);
+  const endView = new DataView(end.buffer);
+  endView.setUint32(0, 0x06054b50, true);
+  endView.setUint16(8, files.length, true);
+  endView.setUint16(10, files.length, true);
+  endView.setUint32(12, centralSize, true);
+  endView.setUint32(16, offset, true);
+
+  return new Blob([...chunks, ...centralChunks, end], { type: 'application/zip' });
+}
+
+function dosDateTime(date) {
+  return {
+    time: (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2),
+    date: ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
+  };
+}
+
+function crc32(data) {
+  let crc = 0xffffffff;
+  for (let i = 0; i < data.length; i += 1) {
+    crc ^= data[i];
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+    }
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function onFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const name = file.name.toLowerCase();
+    if (name === 'overview.txt') parseOverview(ev.target.result);
+    else if (/^card_image\d+\.txt$/i.test(file.name)) addImageRow(ev.target.result.trim());
+    else parseApplicationInfo(ev.target.result);
+    toast('読み込みました');
+  };
+  reader.readAsText(file, 'UTF-8');
+  event.target.value = '';
+}
+
+function loadPaste(type) {
+  const text = el('pasteArea').value.trim();
+  if (!text) { toast('貼り付け内容がありません'); return; }
+  if (type === 'overview') parseOverview(text);
+  else parseApplicationInfo(text);
+  el('pasteArea').value = '';
+  toast('読み込みました');
+}
+
+const SECTION_RE = /^\s*(?:[◆■●▶▷◇□○★☆＊※→►◉✦✧]|[-=]{2,}|[【\[])(.+?)(?:[】\]]|\s*)$/;
+
+function parseSections(text) {
+  const sections = {};
+  let current = null;
+  for (const raw of (text || '').split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    const match = line.match(SECTION_RE);
+    if (match) {
+      current = normalizeSectionName(match[1]);
+      sections[current] = [];
+      continue;
+    }
+    if (current) sections[current].push(line);
+  }
+  return sections;
+}
+
+function normalizeSectionName(value) {
+  return value
+    .replace(/^[◆■●▶▷◇□○★☆＊※→►◉✦✧【\[]+/, '')
+    .replace(/[】\]：:]+$/, '')
+    .trim();
+}
+
+function getSection(sections, keys) {
+  for (const key of keys) {
+    if (sections[key]?.length) return sections[key];
+  }
+  return [];
+}
+
+function parseApplicationInfo(text) {
+  const sections = parseSections(text);
+  el('appName').value = getSection(sections, ['表示アプリ名', 'アプリ名', '名前', 'Name'])[0] || '';
+  el('category').value = getSection(sections, ['カテゴリ', 'Category', '分類'])[0] || '';
+  el('summary').value = getSection(sections, ['概要', 'About', '説明']).join('\n');
+  el('detail').value = getSection(sections, ['詳細', '補足', 'Overview']).join('\n');
+  el('features').value = getSection(sections, ['主な機能', '機能', 'Features'])
+    .map(x => x.replace(/^[・\-*•\d.]+\s*/, ''))
+    .join('\n');
+  el('language').value = getSection(sections, ['作成言語', '開発言語', '使用言語', 'Language']).join(' / ');
+  el('requirements').value = getSection(sections, ['動作環境', '環境', 'Requirements']).join(' / ');
+  update();
+}
+
+function parseOverview(text) {
+  const sections = parseSections(text);
+  const detail = getSection(sections, ['Overview', '補足', '詳細']);
+  el('detail').value = detail.length ? detail.join('\n') : text.trim();
+  update();
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/`/g, '&#96;');
+}
+
+let toastTimer;
+function toast(message) {
+  const box = el('toast');
+  box.textContent = message;
+  box.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => box.classList.remove('show'), 2200);
+}
+
+addImageRow();
+update();
+</script>
+</body>
+</html>

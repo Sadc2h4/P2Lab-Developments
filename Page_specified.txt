@@ -1,0 +1,44 @@
+◆ GitHubアカウント
+P2-Lab-C2H4
+
+◆ GitHub種別
+user
+
+◆ GitHub Pagesリポジトリ
+P2Lab-Developments
+
+◆ GitHubブランチ
+main
+
+◆ サイト名
+P2-Lab 製作所
+
+◆ サイトアイコン
+🚀
+
+◆ サイトアイコン画像
+App_icon.ico
+
+◆ アクセントカラー
+#30A19F
+
+◆ ヘッダー画像
+images/hero.png
+
+◆ ヘッダー文字タイトル
+P2-Lab アプリ製作所
+
+◆ ヘッダー文字説明
+Here, you can browse and download various C2H4 applications, including those for creating hacks and distributing at events.
+
+◆ ヘッダー文字背景
+あり
+
+◆ ヘッダー文字背景色
+#16161A
+
+◆ ヘッダー文字背景透過度
+0.36
+
+◆ 背景画像
+images/bg-tile.png
