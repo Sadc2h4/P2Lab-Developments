@@ -613,13 +613,15 @@ function hexToRgba(color, opacity) {
 }
 
 /* ============================================================
-   GitHub から自動読み込み (Page設定を反映してからアプリ一覧を取得)
+   初期データ読み込み
+   - 通常は apps.js の静的カタログを使用
+   - ?gh_live=1 の時だけ GitHub を走査して確認表示
    ============================================================ */
 (async () => {
-  if (typeof GH_loadApps !== 'function') return;
-
+  const params = new URLSearchParams(location.search);
+  const useLiveGitHub = params.get('gh_live') === '1';
+  const hasStaticApps = normalizedApps.length > 0;
   const loadingEl = document.getElementById('loadingState');
-  loadingEl.removeAttribute('hidden');
 
   try {
     const pageConfig = typeof GH_loadPageConfig === 'function'
@@ -629,8 +631,21 @@ function hexToRgba(color, opacity) {
     // ページ外観を先に適用
     applyPageConfig(pageConfig);
 
+    if (hasStaticApps && !useLiveGitHub) {
+      renderGrid();
+      return;
+    }
+
+    if (typeof GH_loadApps !== 'function') return;
+
+    loadingEl.querySelector('p').textContent = useLiveGitHub
+      ? 'GitHubから最新情報を確認中…'
+      : 'GitHubからアプリ情報を読み込み中…';
+    loadingEl.removeAttribute('hidden');
+
     // Page_specified.txt で GitHub 取得元が指定される場合があるため、
-    // ページ設定を反映してからアプリ一覧を取得する
+    // ページ設定を反映してからアプリ一覧を取得する。
+    // 通常公開では apps.js を使い、GitHub 走査は確認モードに限定する。
     const ghApps = await GH_loadApps().catch(() => []);
 
     // アプリカードを更新
@@ -653,9 +668,9 @@ function hexToRgba(color, opacity) {
     }
   } catch (e) {
     console.error('[GitHub Loader] エラー:', e);
+  } finally {
+    loadingEl.setAttribute('hidden', '');
   }
-
-  loadingEl.setAttribute('hidden', '');
 })();
 </script>
 </body>

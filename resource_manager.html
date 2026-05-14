@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Portal Resource Manager</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --text: #18202a;
+      --muted: #667085;
+      --border: #d8dee6;
+      --accent: #2374ab;
+      --accent-dark: #185987;
+      --danger: #b42318;
+      --ok: #067647;
+      --shadow: 0 10px 32px rgba(16, 24, 40, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    header {
+      background: #101828;
+      color: white;
+      padding: 18px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .header-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+    .span-2 { grid-column: span 2; }
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 11px;
+      font: inherit;
+      color: var(--text);
+      background: white;
+    }
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    button {
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+    }
+    button:hover { background: var(--accent-dark); }
+    button.secondary {
+      background: #eef2f6;
+      color: #243447;
+    }
+    button.secondary:hover { background: #e1e7ef; }
+    button.danger {
+      background: #fee4e2;
+      color: var(--danger);
+    }
+    .status {
+      white-space: pre-wrap;
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 24px;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .metric {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfe;
+    }
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+    .app-list {
+      display: grid;
+      gap: 10px;
+    }
+    .app-row {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .app-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: contain;
+      background: #eef2f6;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+    }
+    .app-title {
+      font-weight: 800;
+      line-height: 1.3;
+    }
+    .app-sub {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #ecfdf3;
+      color: var(--ok);
+      font-size: 12px;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    .checkline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .checkline input { width: auto; }
+    @media (max-width: 860px) {
+      .grid, .summary { grid-template-columns: 1fr; }
+      .span-2 { grid-column: auto; }
+      .app-row { grid-template-columns: 40px 1fr; }
+      .app-row .actions { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <h1>App Portal Resource Manager</h1>
+    <div>DLpage_info から apps.js を生成</div>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="grid">
+      <label>
+        GitHubアカウント / Org
+        <input id="owner" value="P2-Lab-C2H4" autocomplete="off">
+      </label>
+      <label>
+        種別
+        <select id="ownerType">
+          <option value="user">ユーザー</option>
+          <option value="org">Organization</option>
+        </select>
+      </label>
+      <label>
+        除外するポータルRepo
+        <input id="portalRepo" value="P2Lab-Developments" autocomplete="off">
+      </label>
+      <label>
+        GitHub Token
+        <input id="token" type="password" placeholder="未入力でも公開Repoは取得可">
+      </label>
+      <label class="span-2">
+        <span class="checkline">
+          <input id="localizeAssets" type="checkbox" checked>
+          画像とアイコンを generated-assets に同梱する
+        </span>
+      </label>
+      <label class="span-2">
+        <span class="checkline">
+          <input id="includeLiveLoader" type="checkbox">
+          確認用にGitHub直接URLを残す
+        </span>
+      </label>
+    </div>
+    <div class="actions" style="margin-top:14px;">
+      <button id="scanBtn">GitHubを走査</button>
+      <button class="secondary" id="loadSampleBtn">現在のapps.jsを読み込み</button>
+      <button class="secondary" id="importAppsBtn">apps.jsを選択して読み込み</button>
+      <input id="importAppsFile" type="file" accept=".js,.txt,application/javascript,text/javascript,text/plain" hidden>
+      <button class="secondary" id="clearBtn">クリア</button>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <section class="summary">
+    <div class="metric"><strong id="repoCount">0</strong>確認Repo</div>
+    <div class="metric"><strong id="appCount">0</strong>登録アプリ</div>
+    <div class="metric"><strong id="assetCount">0</strong>同梱予定アセット</div>
+    <div class="metric"><strong id="errorCount">0</strong>スキップ/失敗</div>
+  </section>
+
+  <section class="panel">
+    <div class="actions" style="justify-content:space-between;">
+      <h2 style="margin:0;font-size:17px;">取得結果</h2>
+      <div class="actions">
+        <button class="secondary" id="copyBtn">apps.jsをコピー</button>
+        <button class="secondary" id="downloadAppsBtn">apps.jsを保存</button>
+        <button id="downloadZipBtn">デプロイ用ZIPを保存</button>
+      </div>
+    </div>
+    <div class="app-list" id="appList" style="margin-top:14px;"></div>
+  </section>
+
+  <section class="panel">
+    <h2 style="margin:0 0 10px;font-size:17px;">apps.js 出力</h2>
+    <textarea id="output" spellcheck="false"></textarea>
+  </section>
+</main>
+
+<script>
+const state = {
+  reposSeen: 0,
+  apps: [],
+  assets: [],
+  errors: [],
+};
+
+const el = id => document.getElementById(id);
+
+function setStatus(message) {
+  el('status').textContent = message || '';
+}
+
+function ghHeaders() {
+  const headers = { Accept: 'application/vnd.github+json' };
+  const token = el('token').value.trim();
+  if (token) headers.Authorization = 'Bearer ' + token;
+  return headers;
+}
+
+async function ghFetchJson(url) {
+  const response = await fetch(url, { headers: ghHeaders() });
+  if (!response.ok) {
+    const remaining = response.headers.get('x-ratelimit-remaining');
+    throw new Error(response.status + ' ' + response.statusText + ' / remaining=' + remaining);
+  }
+  return response.json();
+}
+
+async function ghText(owner, repo, path, ref) {
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  const data = await ghFetchJson(
+    'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + encodedPath + '?ref=' + encodeURIComponent(ref)
+  );
+  if (!data || Array.isArray(data) || typeof data.content !== 'string') return '';
+  return decodeBase64(data.content.replace(/\n/g, ''));
+}
+
+async function ghDir(owner, repo, path, ref) {
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  const data = await ghFetchJson(
+    'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + encodedPath + '?ref=' + encodeURIComponent(ref)
+  );
+  return Array.isArray(data) ? data : [];
+}
+
+function decodeBase64(content) {
+  const bytes = Uint8Array.from(atob(content), c => c.charCodeAt(0));
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
+async function listRepos() {
+  const owner = el('owner').value.trim();
+  const ownerType = el('ownerType').value;
+  const portalRepo = el('portalRepo').value.trim();
+  const base = ownerType === 'org'
+    ? 'https://api.github.com/orgs/' + owner + '/repos'
+    : 'https://api.github.com/users/' + owner + '/repos';
+  const repos = [];
+  for (let page = 1; page < 20; page += 1) {
+    const batch = await ghFetchJson(base + '?per_page=100&page=' + page + '&sort=updated&type=public');
+    if (!batch.length) break;
+    repos.push(...batch);
+    if (batch.length < 100) break;
+  }
+  return repos.filter(repo =>
+    repo && !repo.fork && !repo.archived && !repo.private && repo.name !== portalRepo
+  );
+}
+
+const SECTION_RE = /^\s*(?:[◆■●▶▷◇□○★☆＊※→►◉✦✧]|[-=]{2,}|[【\[])(.+?)(?:[】\]]|\s*)$/;
+
+function parseSections(text) {
+  const sections = {};
+  let current = null;
+  for (const rawLine of (text || '').split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    const matched = line.match(SECTION_RE);
+    if (matched) {
+      current = normalizeSectionName(matched[1]);
+      if (current) sections[current] = [];
+      continue;
+    }
+    if (current) sections[current].push(line);
+  }
+  return sections;
+}
+
+function normalizeSectionName(value) {
+  return value
+    .replace(/^[◆■●▶▷◇□○★☆＊※→►◉✦✧【\[]+/, '')
+    .replace(/[】\]：:]+$/, '')
+    .trim();
+}
+
+function getSection(sections, keys) {
+  for (const key of keys) {
+    if (sections[key] && sections[key].length) return sections[key];
+  }
+  return [];
+}
+
+function parseAppInfo(text) {
+  const sections = parseSections(text);
+  const summaryLines = getSection(sections, ['概要', 'About', 'Overview', '説明']);
+  const overviewLines = getSection(sections, ['詳細', 'Overview', '補足']);
+  return {
+    appName: (getSection(sections, ['表示アプリ名', 'アプリ名', '名前', 'Name'])[0] || '').trim(),
+    category: (getSection(sections, ['カテゴリ', 'Category', '分類'])[0] || 'アプリ').trim(),
+    summary: summaryLines.join('\n').trim(),
+    shortDescription: (summaryLines[0] || '').trim(),
+    overview: overviewLines.join('\n').trim(),
+    features: getSection(sections, ['主な機能', '機能', 'Features'])
+      .map(line => line.replace(/^[・\-*•\d.]+\s*/, '').trim())
+      .filter(Boolean),
+    language: getSection(sections, ['作成言語', '開発言語', '使用言語', 'Language']).join(' / ').trim() || '-',
+    requirements: getSection(sections, ['動作環境', '環境', 'Requirements']).join(' / ').trim() || '-',
+  };
+}
+
+function rawUrl(owner, repo, branch, path) {
+  return 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/' + branch + '/' + path.replace(/^\.?\//, '');
+}
+
+function sortCardImages(entries) {
+  return entries
+    .filter(entry => /^Card_image\d+\.(png|jpg|jpeg|webp|gif)$/i.test(entry.name))
+    .sort((a, b) => Number((a.name.match(/\d+/) || [0])[0]) - Number((b.name.match(/\d+/) || [0])[0]));
+}
+
+async function readCardImageRefs(owner, repo, branch, entries) {
+  const refFiles = entries
+    .filter(entry => /^Card_image\d+\.txt$/i.test(entry.name))
+    .sort((a, b) => Number((a.name.match(/\d+/) || [0])[0]) - Number((b.name.match(/\d+/) || [0])[0]));
+  const images = [];
+  for (const entry of refFiles) {
+    const value = (await ghText(owner, repo, 'DLpage_info/' + entry.name, branch)).trim();
+    if (!value) continue;
+    images.push(/^https?:\/\//i.test(value) || /^data:image\//i.test(value)
+      ? value
+      : rawUrl(owner, repo, branch, value));
+  }
+  return images;
+}
+
+async function fetchRelease(owner, repo) {
+  try {
+    const latest = await ghFetchJson('https://api.github.com/repos/' + owner + '/' + repo + '/releases/latest');
+    return {
+      version: latest.tag_name || '',
+      publishedAt: (latest.published_at || latest.created_at || '').slice(0, 10),
+      pageUrl: latest.html_url || '',
+      assets: Array.isArray(latest.assets)
+        ? latest.assets.map(asset => ({ name: asset.name, url: asset.browser_download_url }))
+        : [],
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function repoToApp(repo) {
+  const owner = el('owner').value.trim();
+  const branch = repo.default_branch || 'main';
+  const entries = await ghDir(owner, repo.name, 'DLpage_info', branch);
+  if (!entries.length) return null;
+  if (!entries.some(entry => entry.name.toLowerCase() === 'application_info.txt')) return null;
+
+  const [infoText, release] = await Promise.all([
+    ghText(owner, repo.name, 'DLpage_info/application_info.txt', branch),
+    fetchRelease(owner, repo.name),
+  ]);
+  const parsed = parseAppInfo(infoText);
+  const inlineImages = sortCardImages(entries).map(entry => entry.download_url).filter(Boolean);
+  const refImages = await readCardImageRefs(owner, repo.name, branch, entries);
+  let iconImage = null;
+  const icoInInfo = entries.find(entry => entry.type === 'file' && /\.ico$/i.test(entry.name));
+  if (icoInInfo) iconImage = icoInInfo.download_url;
+
+  const repoAbout = (repo.description || '').trim().replace(/\s*\/\/\s*/g, '\n');
+  const summary = parsed.summary || repoAbout || '概要は未設定です。';
+  const shortDescription = parsed.shortDescription || (repo.description || '').trim().split('//')[0].trim() || '詳細情報を参照してください。';
+  const version = (release?.version || '').replace(/^v/i, '') || '-';
+  const lastUpdated = release?.publishedAt || (repo.updated_at || '').slice(0, 10) || '-';
+
+  const downloads = [];
+  if (release?.assets?.[0]?.url) {
+    downloads.push({ label: '最新版をダウンロード (' + release.version + ')', url: release.assets[0].url, primary: true });
+    release.assets.slice(1).forEach(asset => downloads.push({ label: asset.name, url: asset.url, primary: false }));
+  } else if (release?.pageUrl) {
+    downloads.push({ label: 'リリースページを開く (' + release.version + ')', url: release.pageUrl, primary: true });
+  }
+  downloads.push({ label: 'GitHubリポジトリを開く', url: repo.html_url, primary: downloads.length === 0 });
+
+  return {
+    id: repo.name,
+    name: parsed.appName || repo.name,
+    shortDescription,
+    description: parsed.overview ? summary + '\n\n' + parsed.overview : summary,
+    icon: '📦',
+    iconColor: '#2B78D3',
+    iconImage,
+    category: parsed.category || 'アプリ',
+    version,
+    lastUpdated,
+    requirements: parsed.requirements,
+    language: parsed.language,
+    features: parsed.features,
+    downloads,
+    images: [...refImages, ...inlineImages].slice(0, 12),
+    repoUrl: repo.html_url,
+    about: repoAbout,
+    releaseTag: release?.version || '',
+    _source: 'resource-manager',
+  };
+}
+
+function safeName(value) {
+  return String(value || 'asset')
+    .replace(/[^A-Za-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80) || 'asset';
+}
+
+function extensionFromUrl(url, fallback) {
+  try {
+    const path = new URL(url).pathname;
+    const ext = (path.match(/\.(png|jpg|jpeg|webp|gif|ico|svg)$/i) || [])[0];
+    return ext || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+async function localizeAssets(apps) {
+  if (!el('localizeAssets').checked) return apps;
+  const includeLive = el('includeLiveLoader').checked;
+  const assets = [];
+  for (const app of apps) {
+    const base = safeName(app.id);
+    if (app.iconImage && /^https?:\/\//i.test(app.iconImage)) {
+      const ext = extensionFromUrl(app.iconImage, '.ico');
+      const path = 'generated-assets/' + base + '-icon' + ext;
+      assets.push({ source: app.iconImage, path });
+      app.iconImage = path;
+      if (includeLive) app.liveIconImage = assets[assets.length - 1].source;
+    }
+    app.images = app.images.map((url, index) => {
+      if (!/^https?:\/\//i.test(url)) return url;
+      const ext = extensionFromUrl(url, '.png');
+      const path = 'generated-assets/' + base + '-card-' + String(index + 1).padStart(2, '0') + ext;
+      assets.push({ source: url, path });
+      return path;
+    });
+    if (includeLive) app.liveImages = assets
+      .filter(asset => asset.path.includes(base + '-card-'))
+      .map(asset => asset.source);
+  }
+  state.assets = assets;
+  return apps;
+}
+
+async function scan() {
+  state.reposSeen = 0;
+  state.apps = [];
+  state.assets = [];
+  state.errors = [];
+  render();
+  setStatus('リポジトリ一覧を取得しています...');
+
+  try {
+    const repos = await listRepos();
+    state.reposSeen = repos.length;
+    setStatus(repos.length + '件のリポジトリを確認します...');
+    for (const repo of repos) {
+      setStatus(repo.name + ' を確認中...');
+      try {
+        const app = await repoToApp(repo);
+        if (app) state.apps.push(app);
+      } catch (error) {
+        state.errors.push(repo.name + ': ' + error.message);
+      }
+      render();
+    }
+    state.apps.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+    await localizeAssets(state.apps);
+    updateOutput();
+    render();
+    setStatus('完了しました。apps.js またはデプロイ用ZIPを保存してください。');
+  } catch (error) {
+    state.errors.push(error.message);
+    render();
+    setStatus('取得に失敗しました: ' + error.message);
+  }
+}
+
+function appsJsText() {
+  return '/**\n' +
+    ' * App Portal static catalog.\n' +
+    ' * Generated by resource_manager.html at ' + new Date().toISOString() + '\n' +
+    ' */\n' +
+    'const apps = ' + JSON.stringify(state.apps, null, 2) + ';\n';
+}
+
+function updateOutput() {
+  el('output').value = appsJsText();
+}
+
+function render() {
+  el('repoCount').textContent = state.reposSeen;
+  el('appCount').textContent = state.apps.length;
+  el('assetCount').textContent = state.assets.length;
+  el('errorCount').textContent = state.errors.length;
+  el('appList').innerHTML = state.apps.length
+    ? state.apps.map(app => {
+        const icon = app.iconImage
+          ? '<img class="app-icon" src="' + escapeAttr(app.iconImage) + '" alt="">'
+          : '<div class="app-icon">📦</div>';
+        return '<div class="app-row">' +
+          icon +
+          '<div><div class="app-title">' + escapeHtml(app.name) + '<span class="badge">' + escapeHtml(app.category) + '</span></div>' +
+          '<div class="app-sub">' + escapeHtml(app.id) + ' / v' + escapeHtml(app.version) + ' / 画像' + app.images.length + '件</div>' +
+          '<div class="app-sub">' + escapeHtml(app.shortDescription) + '</div></div>' +
+          '<div class="actions"><button class="secondary" onclick="removeApp(\'' + escapeAttr(app.id) + '\')">除外</button></div>' +
+          '</div>';
+      }).join('')
+    : '<div class="status">まだ取得結果はありません。</div>';
+  if (state.errors.length) {
+    el('appList').innerHTML += '<div class="status">スキップ/失敗:\n' + escapeHtml(state.errors.join('\n')) + '</div>';
+  }
+}
+
+function removeApp(id) {
+  state.apps = state.apps.filter(app => app.id !== id);
+  state.assets = state.assets.filter(asset => !asset.path.includes(safeName(id) + '-'));
+  updateOutput();
+  render();
+}
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/`/g, '&#96;');
+}
+
+function downloadBlob(name, blob) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function copyAppsJs() {
+  updateOutput();
+  await navigator.clipboard.writeText(el('output').value);
+  setStatus('apps.js をコピーしました。');
+}
+
+function downloadAppsJs() {
+  updateOutput();
+  downloadBlob('apps.js', new Blob([el('output').value], { type: 'text/javascript;charset=utf-8' }));
+}
+
+async function downloadDeployZip() {
+  updateOutput();
+  const files = [{ path: 'apps.js', data: new TextEncoder().encode(el('output').value) }];
+  for (const asset of state.assets) {
+    setStatus(asset.path + ' を取得しています...');
+    try {
+      const response = await fetch(asset.source);
+      if (!response.ok) throw new Error(response.status + ' ' + response.statusText);
+      files.push({ path: asset.path, data: new Uint8Array(await response.arrayBuffer()) });
+    } catch (error) {
+      state.errors.push(asset.path + ': ' + error.message);
+    }
+  }
+  render();
+  downloadBlob('app-portal-resources.zip', createZip(files));
+  setStatus('デプロイ用ZIPを保存しました。');
+}
+
+async function loadCurrentApps() {
+  try {
+    setStatus('現在の apps.js を読み込んでいます...');
+    const response = await fetch('apps.js?v=' + Date.now(), { cache: 'no-store' });
+    const text = await response.text();
+    loadAppsText(text);
+    setStatus('現在の apps.js を読み込みました。');
+  } catch (error) {
+    setStatus('読み込みに失敗しました。ローカルで直接開いている場合は「apps.jsを選択して読み込み」を使ってください。\n' + error.message);
+  }
+}
+
+function loadAppsText(text) {
+  const matched = text.match(/const\s+apps\s*=\s*(\[[\s\S]*?\])\s*;?\s*$/);
+  if (!matched) throw new Error('apps.js の const apps = [...] を検出できませんでした');
+  state.apps = JSON.parse(matched[1]);
+  state.reposSeen = 0;
+  state.assets = [];
+  state.errors = [];
+  updateOutput();
+  render();
+}
+
+function importAppsFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      loadAppsText(ev.target.result);
+      setStatus(file.name + ' を読み込みました。');
+    } catch (error) {
+      setStatus('読み込みに失敗しました: ' + error.message);
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  event.target.value = '';
+}
+
+function clearAll() {
+  state.reposSeen = 0;
+  state.apps = [];
+  state.assets = [];
+  state.errors = [];
+  updateOutput();
+  render();
+  setStatus('');
+}
+
+function createZip(files) {
+  const encoder = new TextEncoder();
+  const chunks = [];
+  const centralChunks = [];
+  let offset = 0;
+
+  files.forEach(file => {
+    const nameBytes = encoder.encode(file.path);
+    const data = file.data instanceof Uint8Array ? file.data : encoder.encode(String(file.data || ''));
+    const crc = crc32(data);
+    const dateTime = dosDateTime(new Date());
+
+    const localHeader = new Uint8Array(30 + nameBytes.length);
+    const localView = new DataView(localHeader.buffer);
+    localView.setUint32(0, 0x04034b50, true);
+    localView.setUint16(4, 20, true);
+    localView.setUint16(6, 0x0800, true);
+    localView.setUint16(8, 0, true);
+    localView.setUint16(10, dateTime.time, true);
+    localView.setUint16(12, dateTime.date, true);
+    localView.setUint32(14, crc, true);
+    localView.setUint32(18, data.length, true);
+    localView.setUint32(22, data.length, true);
+    localView.setUint16(26, nameBytes.length, true);
+    localView.setUint16(28, 0, true);
+    localHeader.set(nameBytes, 30);
+    chunks.push(localHeader, data);
+
+    const centralHeader = new Uint8Array(46 + nameBytes.length);
+    const centralView = new DataView(centralHeader.buffer);
+    centralView.setUint32(0, 0x02014b50, true);
+    centralView.setUint16(4, 20, true);
+    centralView.setUint16(6, 20, true);
+    centralView.setUint16(8, 0x0800, true);
+    centralView.setUint16(10, 0, true);
+    centralView.setUint16(12, dateTime.time, true);
+    centralView.setUint16(14, dateTime.date, true);
+    centralView.setUint32(16, crc, true);
+    centralView.setUint32(20, data.length, true);
+    centralView.setUint32(24, data.length, true);
+    centralView.setUint16(28, nameBytes.length, true);
+    centralView.setUint16(30, 0, true);
+    centralView.setUint16(32, 0, true);
+    centralView.setUint16(34, 0, true);
+    centralView.setUint16(36, 0, true);
+    centralView.setUint32(38, 0, true);
+    centralView.setUint32(42, offset, true);
+    centralHeader.set(nameBytes, 46);
+    centralChunks.push(centralHeader);
+    offset += localHeader.length + data.length;
+  });
+
+  const centralSize = centralChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const end = new Uint8Array(22);
+  const endView = new DataView(end.buffer);
+  endView.setUint32(0, 0x06054b50, true);
+  endView.setUint16(8, files.length, true);
+  endView.setUint16(10, files.length, true);
+  endView.setUint32(12, centralSize, true);
+  endView.setUint32(16, offset, true);
+  return new Blob([...chunks, ...centralChunks, end], { type: 'application/zip' });
+}
+
+function dosDateTime(date) {
+  return {
+    time: (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2),
+    date: ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
+  };
+}
+
+function crc32(data) {
+  let crc = 0xffffffff;
+  for (let i = 0; i < data.length; i += 1) {
+    crc ^= data[i];
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+    }
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+el('scanBtn').addEventListener('click', scan);
+el('loadSampleBtn').addEventListener('click', loadCurrentApps);
+el('importAppsBtn').addEventListener('click', () => el('importAppsFile').click());
+el('importAppsFile').addEventListener('change', importAppsFile);
+el('clearBtn').addEventListener('click', clearAll);
+el('copyBtn').addEventListener('click', copyAppsJs);
+el('downloadAppsBtn').addEventListener('click', downloadAppsJs);
+el('downloadZipBtn').addEventListener('click', downloadDeployZip);
+
+updateOutput();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+アプリ配信ページ リソース管理方式 引き継ぎ書
+作成日: 2026-05-14
+
+目的
+----
+GitHub Pages / Cloudflare Pages 上のアプリ配信ページで、閲覧者のブラウザが毎回 GitHub API を走査しない構成に変更する。
+GitHub Actions が使えない状況でも運用できるように、配信ページとは独立した「リソース生成用アプリ」で apps.js と画像リソースを作成し、それを配信ページと一緒にデプロイする。
+
+
+今回決めた方針
+--------------
+1. 配信ページ(index.html)は通常、静的な apps.js を読み込んで表示する。
+2. apps.js に1件以上アプリがある場合、通常表示では GitHub API の自動走査を実行しない。
+3. GitHub のライブ走査は確認用として残し、URLに ?gh_live=1 を付けた場合だけ実行する。
+4. DLpage_info から apps.js を作る作業は、独立した resource_manager.html で行う。
+5. resource_manager.html は GitHub 公開リポジトリを走査し、DLpage_info/application_info.txt、Card_image、release 情報を集約して apps.js を生成する。
+6. 必要に応じて画像とアイコンを generated-assets/ に採番して同梱し、デプロイ用ZIPとして出力する。
+
+
+変更ファイル
+------------
+index.html
+- 静的 apps.js が存在する場合は GitHub 走査をスキップするよう変更。
+- ?gh_live=1 の時だけ GH_loadApps() によるGitHub走査を実行する。
+- Page_specified.txt による外観設定の反映は維持。
+
+resource_manager.html
+- 新規追加。
+- ブラウザ単体で開けるリソース生成用アプリ。
+- GitHubアカウント/Orgを指定して公開リポジトリを走査する。
+- DLpage_info/application_info.txt があるリポジトリだけアプリとして採用する。
+- apps.js のコピー、単体保存、デプロイ用ZIP保存が可能。
+- 「画像とアイコンを generated-assets に同梱する」をONにすると、apps.js 内の画像パスを generated-assets/... に置き換え、ZIPに画像を含める。
+- 既存 apps.js は、同一ディレクトリからの fetch 読み込み、またはファイル選択で読み込める。
+
+HANDOFF_RESOURCE_MANAGER.txt
+- この引き継ぎ書。
+
+
+想定運用
+--------
+1. resource_manager.html をブラウザで開く。
+2. GitHubアカウント/Org、種別、除外するポータルRepoを確認する。
+3. 必要なら GitHub Token を入力する。
+   - 公開リポジトリだけなら未入力でも動作する。
+   - レート制限が厳しい場合は token を入力する。
+4. 「GitHubを走査」を押す。
+5. 取得結果を確認する。
+6. 必要なら既存 apps.js を読み込み、差分確認や除外を行う。
+7. 「デプロイ用ZIPを保存」を押す。
+8. ZIP内の apps.js と generated-assets/ を配信ページのディレクトリへ反映する。
+9. Cloudflare Pages へデプロイする。
+
+
+配信ページ側の確認方法
+----------------------
+通常確認:
+- index.html を開く。
+- apps.js にアプリが入っていれば GitHub API は走査しない。
+
+GitHubライブ確認:
+- index.html?gh_live=1 を開く。
+- 旧来の GitHub 走査で最新状態を確認できる。
+- このモードは確認用であり、通常公開URLとして使わない。
+
+
+apps.js の形式
+--------------
+resource_manager.html は次の形式で出力する。
+
+const apps = [
+  {
+    id: "repo-name",
+    name: "表示アプリ名",
+    shortDescription: "...",
+    description: "...",
+    iconImage: "generated-assets/repo-name-icon.ico",
+    category: "アプリ",
+    version: "1.0.0",
+    lastUpdated: "2026-05-14",
+    requirements: "...",
+    language: "...",
+    features: ["..."],
+    downloads: [
+      { label: "...", url: "...", primary: true }
+    ],
+    images: [
+      "generated-assets/repo-name-card-01.png"
+    ]
+  }
+];
+
+
+注意点
+------
+- resource_manager.html は静的HTMLのため、生成結果を自動でリポジトリにコミットしない。
+- 生成結果はZIPで保存し、apps.js と generated-assets/ をデプロイ対象へ反映する。
+- 画像取得はGitHub raw/download_url のCORSに依存する。通常のGitHub公開ファイルは取得できる想定。
+- release asset のダウンロードリンクはGitHub上のURLをそのまま使う。配布ファイル本体はZIPに同梱しない。
+- GitHub Token を使う場合、resource_manager.html に保存はしていない。必要な都度入力する。
+- index.html の ?gh_live=1 はGitHub APIを消費するため、通常公開導線には使わない。
+
+
+今後の改善候補
+--------------
+1. resource_manager.html で取得後の各アプリ情報を画面上で直接編集できるようにする。
+2. 既存 apps.js を読み込んで、手動補正した項目をマージ維持できるようにする。
+3. generated-assets の古い未使用ファイルを検出する機能を追加する。
+4. GitHub API のレート制限情報を画面に表示する。
+5. Cloudflare Pages 用の出力先構成を選べるようにする。
+6. ローカル実行用 Node.js 版ジェネレータを追加し、CIを使わず手元コマンドでも同じ生成ができるようにする。
