@@ -493,5 +493,42 @@ const apps = [
     "about": "本アプリケーションはウェブサイトのURLからホームページ構成ファイル，ダウンロードリンクに登録された実ファイル，登録画像などを一括で取得する目的で作成されました． ホームページのバックアップや，大量に取得が必要なデータファイルをまとめて取得する等の目的で使用ができます． （webページの保存でも同じことが可能ですが，本アプリはカテゴリ分けやインデックス作成を自動で実行できるため管理のしやすさに重点を置いています）",
     "releaseTag": "v1.1f",
     "_source": "resource-manager"
+  },
+  {
+    "id": "Sad2Key",
+    "name": "Sad2Key",
+    "shortDescription": "ゲームコントローラーの入力をキーボード入力に変換するアプリケーションです．",
+    "description": "本アプリケーションは JoyToKey で発生していた接続の不安定さや入力変換の不具合を回避するために作成されました. Switch系コントローラーを HID で直接読み取る経路を持ち,JoyToKey形式の .cfg プロファイルをそのまま読み込み・編集・保存できます.",
+    "icon": "📦",
+    "iconColor": "#2B78D3",
+    "iconImage": "generated-assets/Sad2Key/icon.png",
+    "category": "アプリ",
+    "version": "1.0",
+    "lastUpdated": "2026-09-04",
+    "requirements": "",
+    "language": "",
+    "features": [
+      "bluetoothでの接続コントローラー信号をキーボード入力に変換",
+      "Steam等でコントローラー入力のレイヤーが変化した際の優先度変更"
+    ],
+    "downloads": [
+      {
+        "label": "最新版をダウンロード (v1.0)",
+        "url": "https://github.com/Sadc2h4/Sad2Key/releases/download/v1.0/Sad2Key_v1.0.zip",
+        "primary": true
+      },
+      {
+        "label": "GitHubリポジトリを開く",
+        "url": "https://github.com/Sadc2h4/Sad2Key",
+        "primary": false
+      }
+    ],
+    "images": [
+      "generated-assets/Sad2Key/card-01.png"
+    ],
+    "repoUrl": "https://github.com/Sadc2h4/Sad2Key",
+    "about": "Nintendo Switch Pro Controller / Joy-Con の入力をキーボード入力へ変換する Windows 向けツール．JoyToKey形式 .cfg に対応．",
+    "releaseTag": "v1.0",
+    "_source": "editor"
   }
 ];
