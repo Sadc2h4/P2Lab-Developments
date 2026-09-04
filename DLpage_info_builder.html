@@ -535,7 +535,7 @@ function generateApplicationInfo() {
   addSection(out, 'カテゴリ', v('category'));
   addSection(out, '概要', v('summary').split(/\r?\n/));
   addSection(out, '詳細', v('detail').split(/\r?\n/));
-  addSection(out, '主な機能', lines('features').map(x => '・' + x.replace(/^[・\-*•\d.]+\s*/, '')));
+  addSection(out, '主な機能', lines('features').map(x => '・' + x.replace(/^(?:[・\-*•]+|\d+[.)])\s*/, '')));
   addSection(out, '作成言語', v('language'));
   addSection(out, '動作環境', v('requirements'));
   return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
@@ -605,7 +605,7 @@ function updatePreview() {
 
   const featureItems = lines('features');
   el('previewFeatures').innerHTML = featureItems.length
-    ? featureItems.map(item => '<li>' + escapeHtml(item.replace(/^[・\-*•\d.]+\s*/, '')) + '</li>').join('')
+    ? featureItems.map(item => '<li>' + escapeHtml(item.replace(/^(?:[・\-*•]+|\d+[.)])\s*/, '')) + '</li>').join('')
     : '<li>主な機能がここに表示されます。</li>';
 }
 
@@ -853,7 +853,7 @@ function parseApplicationInfo(text) {
   el('summary').value = getSection(sections, ['概要', 'About', '説明']).join('\n');
   el('detail').value = getSection(sections, ['詳細', '補足', 'Overview']).join('\n');
   el('features').value = getSection(sections, ['主な機能', '機能', 'Features'])
-    .map(x => x.replace(/^[・\-*•\d.]+\s*/, ''))
+    .map(x => x.replace(/^(?:[・\-*•]+|\d+[.)])\s*/, ''))
     .join('\n');
   el('language').value = getSection(sections, ['作成言語', '開発言語', '使用言語', 'Language']).join(' / ');
   el('requirements').value = getSection(sections, ['動作環境', '環境', 'Requirements']).join(' / ');

@@ -3,7 +3,7 @@
    ============================================================ */
 
 const GH_CONFIG = {
-  owner:         'P2-Lab-C2H4',
+  owner:         'Sadc2h4',
   ownerType:     'user',
   portalRepo:    'P2Lab-Developments', // Page_specified.txt を置くリポジトリ名
   portalBranch:  'main',       // そのリポジトリのブランチ
@@ -182,7 +182,7 @@ function _parseAppInfo(infoText) {
   const name = _getSectionLines(mergedSections, ['表示アプリ名', 'アプリ名', '名前', 'Name'])[0] || '';
   const category = _getSectionLines(mergedSections, ['カテゴリ', 'Category', '分類'])[0] || 'アプリ';
   const featureLines = _getSectionLines(mergedSections, ['主な機能', '機能', 'Features'])
-    .map(line => line.replace(/^[・\-*•\d.]+\s*/, '').trim())
+    .map(line => line.replace(/^(?:[・\-*•]+|\d+[.)])\s*/, '').trim())
     .filter(Boolean);
   const requirements = _getSectionLines(mergedSections, ['動作環境', '環境', 'Requirements']).join(' / ');
   const language     = _getSectionLines(mergedSections, ['作成言語', '開発言語', '使用言語', 'Language']).join(' / ');

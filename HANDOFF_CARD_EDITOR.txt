@@ -1,0 +1,76 @@
+アプリ配信ページ カード直接管理方式 引き継ぎ書
+作成日: 2026-09-05
+
+方針
+----
+- 表示するカードの情報 (名前・説明・主な機能・カテゴリ・画像など) は、
+  各アプリのリポジトリではなく、このリポジトリの apps.js で直接管理する。
+- GitHub からは「リンク情報」だけを取得する:
+  リポジトリ URL、最新リリースのタグ・公開日・配布ファイル (asset) の URL。
+- 公開ページ (index.html) は従来どおり apps.js を静的に読み込むだけで、
+  閲覧者のブラウザは GitHub API を呼ばない。
+
+
+ファイル構成
+------------
+index.html          公開ページ。apps.js を読み込んで表示する。
+card_editor.html    カード編集ツール (このリポジトリのフォルダを開いて apps.js を直接保存する)。
+portal-render.js    カード / 詳細モーダルの HTML 生成。index.html と card_editor.html が共用する。
+                    見た目を変えるときはここと style.css を編集する。
+apps.js             カード情報の本体。card_editor.html で編集する (手編集も可)。
+generated-assets/   画像置き場。<アプリID>/card-01.png, card-02.jpg, ... (拡張子は元ファイルのまま) と
+                    <アプリID>/icon.ico (または .png) を置く。
+github-loader.js    Page_specified.txt の読み込みと ?gh_live=1 の確認モード用。走査アカウントは Sadc2h4。
+Page_specified.txt  サイト外観の設定。GitHubアカウントの項目はリンク取得先の owner としても使われる。
+resource_manager.html / DLpage_info_builder.html
+                    旧方式のツール。参考として残しているが通常運用では使わない。
+
+
+card_editor.html の使い方
+-------------------------
+1. Chrome または Edge で card_editor.html を開く (ダブルクリックで file:// として開いてよい)。
+2. 「フォルダを開く」でこのリポジトリのフォルダ (apps.js があるフォルダ) を選ぶ。
+   一度選ぶと次回は「再接続する」ボタンで開ける。
+3. カードが公開ページと同じ見た目で並ぶ。
+   - カードをクリック   → 右側に編集パネルが開く。入力するとカードに即時反映される。
+   - カードをドラッグ   → 並べ替え (apps.js の順序 = 表示順)。パネル下の ↑ ↓ でも移動できる。
+   - 末尾の「＋」       → 新しいカードを追加。
+   - 「プレビュー」     → 公開ページと同じ詳細モーダルで確認。
+   - 「削除」           → カードを削除。画像フォルダも削除するか選べる。
+4. 新しいアプリを追加するとき:
+   - ID に GitHub のリポジトリ名を入れる (例: Ninja-Gecho)。
+   - 「GitHub から取得」を押すと、最新リリースから DL リンク・バージョン・更新日が入る。
+     (文章は変更しない。GitHub 以外の独自リンクを足していた場合はそのまま残る)
+   - 表示名・カテゴリ・説明・主な機能 (1 行 1 項目)・作成言語・動作環境を書く。
+   - 画像欄の「＋」で画像を追加すると generated-assets/<ID>/card-NN.<元の拡張子> としてコピーされる。
+     1 枚目がカードに表示され、詳細モーダルでは全枚数がスライド表示される。
+   - アイコン画像を選ぶと generated-assets/<ID>/icon.<拡張子> として保存される。
+5. 「保存」(Ctrl+S) で apps.js が書き換わる。
+   画像やカードを削除したときの実ファイルの削除は、この保存が成功した時点で行われる
+   (保存せずに閉じた場合はファイルは残り、apps.js も変わらない)。
+6. git で commit して main に push すると Cloudflare Pages に反映される。
+   (画像を追加した場合は generated-assets/ 以下も一緒に commit する)
+
+リリースを更新したとき
+----------------------
+1. card_editor.html を開き「全カードのリンクを更新」を押す。
+   各カードの ID をもとに GitHub の最新リリースを確認し、変わったものだけ書き換える。
+   結果は画面下部に表示される。
+2. 保存 → commit → push。
+
+補足
+----
+- GitHub Token は任意。未認証だと GitHub API は 1 時間に 60 回までなので、
+  カード数が増えて「全カードのリンクを更新」が制限に当たる場合だけ入力する。
+  Token はどこにも保存されない (画面を閉じると消える)。
+- Firefox / Safari は File System Access API に未対応のため、閲覧とリンク更新のみ可能。
+  保存はダウンロードになるので、手で apps.js を置き換える。
+- URL に ?edit=<ID> を付けて開くと、そのカードの編集パネルを開いた状態で起動する。
+  ?edit=<ID>&preview=1 でプレビューまで開く。
+- apps.js のフィールド:
+  id, name, shortDescription, description, icon, iconColor, iconImage, category,
+  version, lastUpdated, requirements, language, features[], downloads[{label,url,primary}],
+  images[], repoUrl, about, releaseTag, _source
+  about は現在の公開ページでは表示していない (メモとして保持)。
+- 主な機能の各行は、先頭の「・」「-」「*」「1.」「1)」を自動で除去する。
+  「16x16 …」のように数字で始まる文はそのまま残る。

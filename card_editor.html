@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>カードエディタ - アプリ配布ポータル</title>
+  <link rel="icon" href="App_icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ===== エディタ専用スタイル (公開ページには影響しない) ===== */
+    body { padding-bottom: 80px; }
+
+    .ed-toolbar {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--header-bg);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      color: #fff;
+    }
+    .ed-toolbar-inner {
+      max-width: 1200px; margin: 0 auto; padding: 10px 24px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .ed-title { font-weight: 700; font-size: 15px; margin-right: 6px; white-space: nowrap; }
+    .ed-title small { font-weight: 500; color: rgba(255,255,255,0.55); margin-left: 6px; }
+    .ed-toolbar .spacer { flex: 1; }
+    .ed-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.10); color: #fff;
+      transition: background 0.15s;
+    }
+    .ed-btn:hover:not(:disabled) { background: rgba(255,255,255,0.20); }
+    .ed-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ed-btn.accent { background: var(--accent); border-color: transparent; }
+    .ed-btn.accent:hover:not(:disabled) { background: var(--accent-dark); }
+    .ed-btn.danger { background: #D93025; border-color: transparent; }
+    .ed-btn.danger:hover:not(:disabled) { background: #B3261E; }
+    .ed-btn.light { background: #fff; color: var(--text-1); border-color: var(--border); }
+    .ed-btn.light:hover:not(:disabled) { background: #F2F2F7; }
+    .ed-token {
+      padding: 7px 10px; border-radius: 10px; font-size: 12.5px; width: 210px;
+      border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.10); color: #fff;
+    }
+    .ed-token::placeholder { color: rgba(255,255,255,0.45); }
+    .ed-status { font-size: 12.5px; color: rgba(255,255,255,0.75); white-space: nowrap; }
+    .ed-status.warn { color: #FFB74D; }
+    .ed-status.err  { color: #FF8A80; }
+    .ed-dirty { display: none; width: 8px; height: 8px; border-radius: 50%; background: #FFB74D; }
+    .ed-dirty.on { display: inline-block; }
+
+    .ed-notice {
+      max-width: 1200px; margin: 18px auto 0; padding: 0 24px;
+    }
+    .ed-notice-box {
+      background: #FFF8E1; border: 1px solid #FFE082; color: #6D4C00;
+      border-radius: 12px; padding: 12px 16px; font-size: 13px; line-height: 1.6;
+    }
+    .ed-notice-box.info { background: #E8F1FD; border-color: #B7D3F7; color: #123E7A; }
+
+    .ed-main { max-width: 1200px; margin: 0 auto; padding: 26px 24px 40px; }
+    .ed-main-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; }
+    .ed-main-head h1 { font-size: 20px; font-weight: 800; }
+    .ed-main-head p { font-size: 13px; color: var(--text-2); }
+
+    /* --- カードの編集用装飾 --- */
+    .app-grid .app-card { position: relative; user-select: none; }
+    .app-grid .app-card.ed-selected { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+    .app-grid .app-card.ed-dragging { opacity: 0.35; }
+    .app-grid .app-card.ed-drop-before::before,
+    .app-grid .app-card.ed-drop-after::after {
+      content: ''; position: absolute; top: 8px; bottom: 8px; width: 4px;
+      background: var(--accent); border-radius: 4px; z-index: 5;
+    }
+    .app-grid .app-card.ed-drop-before::before { left: -12px; }
+    .app-grid .app-card.ed-drop-after::after  { right: -12px; }
+    .ed-handle {
+      position: absolute; top: 8px; right: 8px; z-index: 6;
+      width: 26px; height: 26px; border-radius: 8px;
+      background: rgba(0,0,0,0.55); color: #fff; font-size: 14px;
+      display: grid; place-items: center; cursor: grab;
+    }
+    .ed-order {
+      position: absolute; top: 8px; left: 8px; z-index: 6;
+      min-width: 26px; height: 26px; padding: 0 8px; border-radius: 8px;
+      background: rgba(0,0,0,0.55); color: #fff; font-size: 12px; font-weight: 700;
+      display: grid; place-items: center;
+    }
+    .app-card .dl-btn { pointer-events: none; }
+
+    .ed-add-card {
+      min-height: 200px; border: 2px dashed #C7C7CC; border-radius: var(--radius-card);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+      color: var(--text-2); cursor: pointer; background: transparent;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .ed-add-card:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,113,227,0.04); }
+    .ed-add-card .plus { font-size: 44px; line-height: 1; font-weight: 300; }
+    .ed-add-card .label { font-size: 13px; font-weight: 600; }
+
+    /* --- 編集ドロワー --- */
+    .ed-drawer-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.25); z-index: 300;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .ed-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+    .ed-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100vw);
+      background: #fff; z-index: 310; box-shadow: var(--shadow-lg);
+      transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+      display: flex; flex-direction: column;
+    }
+    .ed-drawer.open { transform: translateX(0); }
+    .ed-drawer-head {
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .ed-drawer-head h2 { font-size: 15px; font-weight: 700; flex: 1; min-width: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ed-drawer-body { flex: 1; overflow-y: auto; padding: 16px 18px 28px; }
+    .ed-drawer-foot {
+      padding: 12px 18px; border-top: 1px solid var(--border);
+      display: flex; gap: 8px; align-items: center; background: #FAFAFC;
+    }
+    .ed-drawer-foot .spacer { flex: 1; }
+    .ed-close {
+      width: 30px; height: 30px; border-radius: 50%; border: none; background: #F2F2F7;
+      display: grid; place-items: center; color: var(--text-2);
+    }
+    .ed-close:hover { background: #E5E5EA; color: var(--text-1); }
+
+    .ed-section { margin-bottom: 20px; }
+    .ed-section-label {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--text-3); margin-bottom: 8px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .ed-section-label .hint { font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--text-3); }
+    .ed-field { margin-bottom: 10px; }
+    .ed-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
+    .ed-field label .req { color: #D93025; margin-left: 3px; }
+    .ed-input, .ed-textarea, .ed-select {
+      width: 100%; padding: 8px 10px; border-radius: 9px; font-size: 13.5px;
+      border: 1px solid var(--border); background: #fff; color: var(--text-1); font: inherit;
+    }
+    .ed-input:focus, .ed-textarea:focus, .ed-select:focus {
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+    }
+    .ed-input.invalid { border-color: #D93025; }
+    .ed-textarea { min-height: 84px; resize: vertical; line-height: 1.5; }
+    .ed-row { display: flex; gap: 10px; }
+    .ed-row > * { flex: 1; min-width: 0; }
+    .ed-row .narrow { flex: 0 0 110px; }
+    .ed-help { font-size: 11.5px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
+
+    .ed-icon-row { display: flex; align-items: center; gap: 12px; }
+    .ed-icon-preview {
+      width: 52px; height: 52px; border-radius: 22%; display: grid; place-items: center;
+      font-size: 24px; color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.15); flex-shrink: 0;
+      overflow: hidden; background: #607D8B;
+    }
+    .ed-icon-preview img { width: 100%; height: 100%; object-fit: contain; }
+    .ed-color { width: 40px; height: 34px; padding: 2px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+
+    .ed-thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .ed-thumb {
+      position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border);
+      background: #111; aspect-ratio: 4 / 3;
+    }
+    .ed-thumb img { width: 100%; height: 100%; object-fit: contain; }
+    .ed-thumb .num {
+      position: absolute; top: 5px; left: 5px; font-size: 10.5px; font-weight: 700;
+      background: rgba(0,0,0,0.6); color: #fff; padding: 1px 6px; border-radius: 6px;
+    }
+    .ed-thumb .ops {
+      position: absolute; right: 4px; bottom: 4px; display: flex; gap: 3px;
+    }
+    .ed-thumb .ops button {
+      width: 24px; height: 24px; border-radius: 6px; border: none;
+      background: rgba(255,255,255,0.92); color: var(--text-1); font-size: 12px; font-weight: 700;
+    }
+    .ed-thumb .ops button:hover { background: #fff; }
+    .ed-thumb .ops button.del { color: #D93025; }
+    .ed-thumb-add {
+      border: 2px dashed #C7C7CC; border-radius: 10px; aspect-ratio: 4 / 3;
+      display: grid; place-items: center; color: var(--text-3); font-size: 26px; cursor: pointer;
+      background: transparent;
+    }
+    .ed-thumb-add:hover { border-color: var(--accent); color: var(--accent); }
+
+    .ed-dl-row { display: grid; grid-template-columns: 22px 1fr 1.4fr 28px; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .ed-dl-row input[type=radio] { width: 16px; height: 16px; accent-color: var(--accent); }
+    .ed-mini {
+      width: 28px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
+      background: #fff; color: var(--text-2); font-size: 14px;
+    }
+    .ed-mini:hover { background: #F2F2F7; color: #D93025; }
+    .ed-link-btn {
+      font-size: 12.5px; font-weight: 600; color: var(--accent); background: none; border: none; padding: 4px 0;
+    }
+    .ed-link-btn:hover { text-decoration: underline; }
+    .ed-inline-status { font-size: 12px; color: var(--text-2); margin-top: 6px; line-height: 1.5; }
+    .ed-inline-status.err { color: #D93025; }
+    .ed-inline-status.ok  { color: #1B7F3B; }
+
+    .ed-toast {
+      position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
+      background: rgba(22,22,26,0.94); color: #fff; padding: 10px 18px; border-radius: 12px;
+      font-size: 13px; z-index: 400; opacity: 0; transition: opacity 0.2s, transform 0.2s;
+      max-width: min(720px, 90vw); line-height: 1.5;
+    }
+    .ed-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 640px) {
+      .ed-token { width: 100%; }
+      .ed-thumbs { grid-template-columns: repeat(2, 1fr); }
+    }
+    /* プレビューモーダルはドロワーより前面に出す */
+    .modal-overlay { z-index: 350; }
+    .image-modal-overlay { z-index: 360; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ed-drawer, .ed-drawer-backdrop, .ed-toast, .app-card { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========== ツールバー ========== -->
+<div class="ed-toolbar">
+  <div class="ed-toolbar-inner">
+    <div class="ed-title">カードエディタ<small id="folderName">フォルダ未選択</small></div>
+    <button class="ed-btn" id="openFolderBtn">📂 フォルダを開く</button>
+    <button class="ed-btn accent" id="saveBtn" disabled>💾 保存 <span style="opacity:.7;font-weight:500">Ctrl+S</span></button>
+    <button class="ed-btn" id="refreshAllBtn" disabled>🔄 全カードのリンクを更新</button>
+    <input class="ed-token" id="tokenInput" type="password" placeholder="GitHub Token (任意・未保存)" autocomplete="off">
+    <span class="spacer"></span>
+    <span class="ed-dirty" id="dirtyDot" title="未保存の変更があります"></span>
+    <span class="ed-status" id="statusText">フォルダを開いて apps.js を読み込んでください</span>
+  </div>
+</div>
+
+<div class="ed-notice" id="noticeArea" hidden>
+  <div class="ed-notice-box" id="noticeBox"></div>
+</div>
+
+<!-- ========== メイン (公開ページと同じ見た目のグリッド) ========== -->
+<main class="ed-main">
+  <div class="ed-main-head">
+    <h1>カード一覧</h1>
+    <p id="appCount">—</p>
+    <p>カードをクリックで編集、ドラッグで並べ替え、末尾の「＋」で追加</p>
+  </div>
+  <div class="app-grid" id="appGrid"></div>
+</main>
+
+<!-- ========== 編集ドロワー ========== -->
+<div class="ed-drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="ed-drawer" id="drawer" aria-hidden="true">
+  <div class="ed-drawer-head">
+    <h2 id="drawerTitle">カードを編集</h2>
+    <button class="ed-btn light" id="previewBtn" title="公開ページと同じ詳細モーダルで確認">👁 プレビュー</button>
+    <button class="ed-close" id="drawerClose" aria-label="閉じる">
+      <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
+    </button>
+  </div>
+  <div class="ed-drawer-body" id="drawerBody"></div>
+  <div class="ed-drawer-foot">
+    <button class="ed-btn danger" id="deleteBtn">🗑 削除</button>
+    <span class="spacer"></span>
+    <button class="ed-btn light" id="moveUpBtn" title="ひとつ前へ">↑</button>
+    <button class="ed-btn light" id="moveDownBtn" title="ひとつ後ろへ">↓</button>
+    <button class="ed-btn accent" id="doneBtn">閉じる</button>
+  </div>
+</aside>
+
+<!-- ========== プレビュー用モーダル (index.html と同じ構造) ========== -->
+<div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+  <div class="modal-sheet" id="modalSheet" role="dialog" aria-modal="true">
+    <div class="modal-close-bar">
+      <button class="modal-close" id="modalClose" aria-label="閉じる">
+        <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
+      </button>
+    </div>
+    <div id="modalImages"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+<div class="image-modal-overlay" id="imageModalOverlay" aria-hidden="true">
+  <div class="image-modal-sheet" role="dialog" aria-modal="true" aria-label="画像プレビュー">
+    <button class="image-modal-close" id="imageModalClose" aria-label="画像プレビューを閉じる">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
+    </button>
+    <img id="imageModalImg" class="image-modal-img" src="" alt="">
+  </div>
+</div>
+
+<div class="ed-toast" id="toast"></div>
+<input type="file" id="imageFileInput" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+<input type="file" id="iconFileInput" accept=".ico,image/png,image/x-icon,image/vnd.microsoft.icon" hidden>
+
+<script src="portal-render.js"></script>
+<script src="github-loader.js"></script>
+<script>
+'use strict';
+const esc = PortalRender.escapeHtml;
+const $ = id => document.getElementById(id);
+
+/* ============================================================
+   設定
+   ============================================================ */
+const EDITOR = {
+  defaultOwner: (typeof GH_CONFIG !== 'undefined' && GH_CONFIG.owner) || 'Sadc2h4',
+  assetsDir: 'generated-assets',
+  appsFile: 'apps.js',
+  pageFile: 'Page_specified.txt',
+};
+
+/* ============================================================
+   状態
+   ============================================================ */
+const state = {
+  dirHandle: null,        // FileSystemDirectoryHandle (未対応環境では null)
+  apps: [],               // apps.js の生データ (編集対象)
+  selectedIndex: -1,
+  dirty: false,
+  owner: EDITOR.defaultOwner,
+  pageConfig: null,
+  imageUrls: new Map(),   // 相対パス -> object URL
+};
+
+PortalRender.setImageResolver(src => state.imageUrls.get(src) || src);
+
+/* 実ファイルの削除は apps.js の保存が成功してから行う (未保存のまま閉じても参照切れにしない) */
+const pendingDeletes = new Set();     // 削除予定のファイルパス
+const pendingDeleteDirs = new Set();  // 削除予定のフォルダ名 (generated-assets 直下、中身ごと)
+
+function isReferenced(path) {
+  return state.apps.some(a => (a.images || []).includes(path) || a.iconImage === path);
+}
+
+async function flushPendingDeletes() {
+  if (!state.dirHandle) return;
+  const touchedDirs = new Set();
+  for (const p of pendingDeletes) {
+    if (isReferenced(p)) continue; // 同じパスに置き直された場合は消さない
+    try { await deleteFile(p); state.imageUrls.delete(p); touchedDirs.add(p.split('/')[1]); }
+    catch (e) { console.warn('削除できません:', p, e); }
+  }
+  pendingDeletes.clear();
+  let assets = null;
+  try { assets = await state.dirHandle.getDirectoryHandle(EDITOR.assetsDir); } catch { return; }
+  for (const d of pendingDeleteDirs) {
+    try { await assets.removeEntry(d, { recursive: true }); } catch (e) { console.warn('フォルダを削除できません:', d, e); }
+  }
+  pendingDeleteDirs.clear();
+  // 空になった旧フォルダだけ片付ける (中身が残っていれば失敗するのでそのまま)
+  for (const d of touchedDirs) {
+    try { await assets.removeEntry(d); } catch { /* not empty */ }
+  }
+}
+
+/* ============================================================
+   ファイルアクセス層
+   - File System Access API があればリポジトリフォルダを直接読み書き
+   - なければ fetch で読み込み、保存はダウンロードにフォールバック
+   ============================================================ */
+const supportsFS = typeof window.showDirectoryPicker === 'function';
+
+async function getHandleByPath(path, { create = false, kind = 'file' } = {}) {
+  const parts = path.split('/').filter(Boolean);
+  let dir = state.dirHandle;
+  for (let i = 0; i < parts.length - 1; i++) {
+    dir = await dir.getDirectoryHandle(parts[i], { create });
+  }
+  const last = parts[parts.length - 1];
+  return kind === 'file'
+    ? dir.getFileHandle(last, { create })
+    : dir.getDirectoryHandle(last, { create });
+}
+
+async function readText(path) {
+  if (state.dirHandle) {
+    try {
+      const fh = await getHandleByPath(path);
+      return await (await fh.getFile()).text();
+    } catch { return null; }
+  }
+  try {
+    const res = await fetch(path + '?v=' + Date.now(), { cache: 'no-store' });
+    return res.ok ? await res.text() : null;
+  } catch { return null; }
+}
+
+async function writeText(path, text) {
+  if (state.dirHandle) {
+    const fh = await getHandleByPath(path, { create: true });
+    const w = await fh.createWritable();
+    await w.write(text);
+    await w.close();
+    return 'fs';
+  }
+  const blob = new Blob([text], { type: 'text/javascript' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = path.split('/').pop();
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  return 'download';
+}
+
+async function writeBlob(path, blob) {
+  const fh = await getHandleByPath(path, { create: true });
+  const w = await fh.createWritable();
+  await w.write(blob);
+  await w.close();
+}
+
+async function deleteFile(path) {
+  const parts = path.split('/').filter(Boolean);
+  let dir = state.dirHandle;
+  for (let i = 0; i < parts.length - 1; i++) dir = await dir.getDirectoryHandle(parts[i]);
+  await dir.removeEntry(parts[parts.length - 1]);
+}
+
+async function fileExists(path) {
+  try { await getHandleByPath(path); return true; } catch { return false; }
+}
+
+/* 画像を表示用 URL に解決してキャッシュ */
+async function cacheImage(path) {
+  if (!path || state.imageUrls.has(path) || /^(https?:|data:|blob:)/i.test(path)) return;
+  if (!state.dirHandle) return; // http 経由なら相対パスのまま表示できる
+  try {
+    const fh = await getHandleByPath(path);
+    const file = await fh.getFile();
+    state.imageUrls.set(path, URL.createObjectURL(file));
+  } catch {
+    // 見つからない画像は素のパスのまま (壊れた画像として表示される)
+  }
+}
+
+async function cacheAllImages() {
+  const paths = [];
+  for (const app of state.apps) {
+    (app.images || []).forEach(p => paths.push(p));
+    if (app.iconImage) paths.push(app.iconImage);
+  }
+  await Promise.all(paths.map(cacheImage));
+}
+
+/* ディレクトリハンドルを IndexedDB に保存して次回の再選択を省く */
+const HANDLE_DB = 'card-editor';
+function idb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(HANDLE_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('handles');
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function saveHandle(handle) {
+  try {
+    const db = await idb();
+    const tx = db.transaction('handles', 'readwrite');
+    tx.objectStore('handles').put(handle, 'repo');
+    await new Promise(r => tx.oncomplete = r);
+  } catch { /* ignore */ }
+}
+async function loadHandle() {
+  try {
+    const db = await idb();
+    const tx = db.transaction('handles', 'readonly');
+    const req = tx.objectStore('handles').get('repo');
+    return await new Promise(r => { req.onsuccess = () => r(req.result || null); req.onerror = () => r(null); });
+  } catch { return null; }
+}
+
+/* ============================================================
+   apps.js の読み書き
+   ============================================================ */
+function parseAppsJs(text) {
+  const m = text.match(/const\s+apps\s*=\s*(\[[\s\S]*\])\s*;?\s*$/);
+  if (!m) throw new Error('apps.js の "const apps = [...]" を検出できませんでした');
+  const arr = JSON.parse(m[1]);
+  if (!Array.isArray(arr)) throw new Error('apps が配列ではありません');
+  return arr;
+}
+
+const FIELD_ORDER = [
+  'id', 'name', 'shortDescription', 'description', 'icon', 'iconColor', 'iconImage',
+  'category', 'version', 'lastUpdated', 'requirements', 'language', 'features',
+  'downloads', 'images', 'repoUrl', 'about', 'releaseTag', '_source',
+];
+
+function orderedApp(app) {
+  const out = {};
+  FIELD_ORDER.forEach(k => { if (Object.prototype.hasOwnProperty.call(app, k)) out[k] = app[k]; });
+  Object.keys(app).forEach(k => { if (!Object.prototype.hasOwnProperty.call(out, k)) out[k] = app[k]; });
+  return out;
+}
+
+function appsJsText() {
+  return '/**\n' +
+    ' * App Portal static catalog.\n' +
+    ' * カード情報はこのリポジトリで直接管理する (card_editor.html で編集)。\n' +
+    ' * 画像は generated-assets/<アプリID>/ 配下に置く。\n' +
+    ' */\n' +
+    'const apps = ' + JSON.stringify(state.apps.map(orderedApp), null, 2) + ';\n';
+}
+
+/* ============================================================
+   読み込み
+   ============================================================ */
+async function openFolder() {
+  if (!supportsFS) {
+    showNotice('このブラウザは File System Access API に対応していません。Chrome / Edge で開くか、ローカルサーバー経由で閲覧専用として使用してください。', 'warn');
+    return;
+  }
+  let handle;
+  try {
+    handle = await window.showDirectoryPicker({ id: 'p2lab-portal', mode: 'readwrite' });
+  } catch { return; }
+  await useHandle(handle);
+  openFromQuery();
+}
+
+async function useHandle(handle) {
+  const perm = await handle.requestPermission({ mode: 'readwrite' });
+  if (perm !== 'granted') { setStatus('フォルダへの書き込み権限がありません', 'err'); return; }
+  // 先に apps.js を読めることを確認してから切り替える (誤ったフォルダへ保存しないため)
+  try {
+    const fh = await handle.getFileHandle(EDITOR.appsFile);
+    parseAppsJs(await (await fh.getFile()).text());
+  } catch (e) {
+    setStatus('apps.js を読み込めません: ' + e.message, 'err');
+    showNotice(`選択したフォルダ「<b>${esc(handle.name)}</b>」に有効な apps.js がありません。配信ページのリポジトリフォルダ (index.html や apps.js があるフォルダ) を選択してください。`, 'warn');
+    return;
+  }
+  state.dirHandle = handle;
+  pendingDeletes.clear();
+  pendingDeleteDirs.clear();
+  $('folderName').textContent = handle.name;
+  await saveHandle(handle);
+  await loadAll();
+}
+
+async function loadAll() {
+  setStatus('apps.js を読み込み中…');
+  const text = await readText(EDITOR.appsFile);
+  if (text == null) {
+    setStatus('apps.js が見つかりません', 'err');
+    showNotice('選択したフォルダに apps.js がありません。配信ページのリポジトリフォルダ (index.html や apps.js があるフォルダ) を選択してください。', 'warn');
+    return;
+  }
+  try {
+    state.apps = parseAppsJs(text);
+  } catch (e) {
+    setStatus(e.message, 'err');
+    return;
+  }
+  hideNotice();
+
+  // ページ設定 (アクセント色・背景) を反映して見た目を揃える
+  const pageText = await readText(EDITOR.pageFile);
+  if (pageText && typeof _parsePageConfig === 'function') {
+    state.pageConfig = _parsePageConfig(pageText, v => v);
+    if (state.pageConfig?.githubOwner) state.owner = state.pageConfig.githubOwner;
+    await applyLook(state.pageConfig);
+  }
+
+  for (const url of state.imageUrls.values()) URL.revokeObjectURL(url);
+  state.imageUrls.clear();
+  await cacheAllImages();
+
+  state.selectedIndex = -1;
+  setDirty(false);
+  $('saveBtn').disabled = false;
+  $('refreshAllBtn').disabled = false;
+  renderGrid();
+  setStatus(`${state.apps.length} 件のカードを読み込みました (owner: ${state.owner})`);
+}
+
+async function applyLook(cfg) {
+  if (!cfg) return;
+  const root = document.documentElement;
+  if (cfg.accentColor) root.style.setProperty('--accent', cfg.accentColor);
+  if (cfg.bgImage) {
+    await cacheImage(cfg.bgImage);
+    document.body.style.backgroundImage = `url("${state.imageUrls.get(cfg.bgImage) || cfg.bgImage}")`;
+    document.body.style.backgroundRepeat = 'repeat';
+    document.body.style.backgroundPosition = 'left top';
+  } else if (cfg.bgColor) {
+    document.body.style.background = cfg.bgColor;
+  }
+}
+
+/* ============================================================
+   保存
+   ============================================================ */
+async function saveAll() {
+  if (!state.apps) return;
+  const problems = validateAll();
+  if (problems.length) {
+    toast('保存できません: ' + problems[0]);
+    return;
+  }
+  try {
+    const how = await writeText(EDITOR.appsFile, appsJsText());
+    if (how === 'fs') {
+      await flushPendingDeletes();
+      setDirty(false);
+      setStatus('apps.js を保存しました ' + new Date().toLocaleTimeString());
+      toast('apps.js を保存しました。git で commit / push すると公開ページに反映されます。');
+    } else {
+      // リポジトリへの反映は手作業なので未保存扱いのまま
+      setStatus('apps.js をダウンロードしました。リポジトリの apps.js に上書きしてください', 'warn');
+      toast('apps.js をダウンロードしました。リポジトリの apps.js に上書きしてください。');
+    }
+  } catch (e) {
+    setStatus('保存に失敗: ' + e.message, 'err');
+  }
+}
+
+function validateAll() {
+  const problems = [];
+  const seen = new Set();
+  state.apps.forEach((app, i) => {
+    const id = (app.id || '').trim();
+    if (!id) problems.push(`${i + 1} 番目のカードに ID がありません`);
+    else if (!isValidId(id)) problems.push(`「${id}」の ID に使えない文字があります (英数字 . _ - のみ)`);
+    else if (seen.has(id.toLowerCase())) problems.push(`ID「${id}」が重複しています (大文字小文字の違いも同一扱い)`);
+    seen.add(id.toLowerCase());
+    if (!(app.name || '').trim()) problems.push(`「${id || i + 1}」に表示名がありません`);
+  });
+  return problems;
+}
+
+/* ============================================================
+   グリッド描画 (公開ページと同じ cardHTML を使用)
+   ============================================================ */
+function renderGrid() {
+  const grid = $('appGrid');
+  const html = state.apps.map((app, i) => {
+    const n = PortalRender.normalize(app, i);
+    return PortalRender.cardHTML(n)
+      .replace('<article ', `<article draggable="true" data-index="${i}" `)
+      .replace('</article>', `<span class="ed-order">${i + 1}</span><span class="ed-handle" title="ドラッグで並べ替え">⠿</span></article>`);
+  }).join('');
+  grid.innerHTML = html + `
+    <button class="ed-add-card" id="addCardBtn" type="button" aria-label="カードを追加">
+      <span class="plus">＋</span><span class="label">カードを追加</span>
+    </button>`;
+  $('appCount').textContent = `${state.apps.length} 件`;
+  highlightSelected();
+}
+
+function rerenderCard(i) {
+  const old = $('appGrid').querySelector(`.app-card[data-index="${i}"]`);
+  if (!old) { renderGrid(); return; }
+  const n = PortalRender.normalize(state.apps[i], i);
+  const tmp = document.createElement('div');
+  tmp.innerHTML = PortalRender.cardHTML(n)
+    .replace('<article ', `<article draggable="true" data-index="${i}" `)
+    .replace('</article>', `<span class="ed-order">${i + 1}</span><span class="ed-handle" title="ドラッグで並べ替え">⠿</span></article>`);
+  old.replaceWith(tmp.firstElementChild);
+  highlightSelected();
+}
+
+function highlightSelected() {
+  document.querySelectorAll('.app-card').forEach(el => {
+    el.classList.toggle('ed-selected', Number(el.dataset.index) === state.selectedIndex);
+  });
+}
+
+/* ============================================================
+   カード追加 / 削除 / 並べ替え
+   ============================================================ */
+function newApp() {
+  return {
+    id: '',
+    name: '新しいアプリ',
+    shortDescription: '',
+    description: '',
+    icon: '📦',
+    iconColor: '#2B78D3',
+    iconImage: null,
+    category: 'アプリ',
+    version: '-',
+    lastUpdated: new Date().toISOString().slice(0, 10),
+    requirements: '',
+    language: '',
+    features: [],
+    downloads: [],
+    images: [],
+    repoUrl: '',
+    about: '',
+    releaseTag: '',
+    _source: 'editor',
+  };
+}
+
+function addCard(atIndex) {
+  const app = newApp();
+  const idx = (atIndex == null) ? state.apps.length : atIndex;
+  state.apps.splice(idx, 0, app);
+  setDirty(true);
+  renderGrid();
+  openDrawer(idx);
+}
+
+async function deleteCard(i) {
+  const app = state.apps[i];
+  const label = app.name || app.id || `${i + 1} 番目`;
+  if (!confirm(`「${label}」のカードを削除しますか？`)) return;
+
+  let removeFiles = false;
+  const hasFiles = state.dirHandle && app.id && ((app.images || []).some(isLocalAsset) || isLocalAsset(app.iconImage));
+  if (hasFiles) {
+    removeFiles = confirm(`generated-assets/${app.id}/ 内の画像ファイルも削除しますか？ (保存時に削除されます)\n(キャンセル = ファイルは残す)`);
+  }
+  if (removeFiles) pendingDeleteDirs.add(app.id);
+  state.apps.splice(i, 1);
+  state.selectedIndex = -1;
+  closeDrawer();
+  setDirty(true);
+  renderGrid();
+}
+
+function moveCard(from, to) {
+  if (to < 0 || to >= state.apps.length || from === to) return;
+  const [item] = state.apps.splice(from, 1);
+  state.apps.splice(to, 0, item);
+  state.selectedIndex = to;
+  setDirty(true);
+  renderGrid();
+}
+
+/* --- ドラッグ & ドロップ並べ替え --- */
+let dragFrom = -1;
+const grid = $('appGrid');
+
+grid.addEventListener('dragstart', e => {
+  const card = e.target.closest('.app-card');
+  if (!card) return;
+  dragFrom = Number(card.dataset.index);
+  card.classList.add('ed-dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', String(dragFrom));
+});
+grid.addEventListener('dragend', () => {
+  dragFrom = -1;
+  grid.querySelectorAll('.ed-dragging, .ed-drop-before, .ed-drop-after')
+    .forEach(el => el.classList.remove('ed-dragging', 'ed-drop-before', 'ed-drop-after'));
+});
+grid.addEventListener('dragover', e => {
+  const card = e.target.closest('.app-card');
+  if (!card || dragFrom < 0) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const rect = card.getBoundingClientRect();
+  const before = (e.clientX - rect.left) < rect.width / 2;
+  grid.querySelectorAll('.ed-drop-before, .ed-drop-after').forEach(el => el.classList.remove('ed-drop-before', 'ed-drop-after'));
+  card.classList.add(before ? 'ed-drop-before' : 'ed-drop-after');
+});
+grid.addEventListener('drop', e => {
+  const card = e.target.closest('.app-card');
+  if (!card || dragFrom < 0) return;
+  e.preventDefault();
+  const rect = card.getBoundingClientRect();
+  const before = (e.clientX - rect.left) < rect.width / 2;
+  let to = Number(card.dataset.index) + (before ? 0 : 1);
+  if (dragFrom < to) to -= 1;
+  const wasSelected = state.selectedIndex === dragFrom;
+  moveCard(dragFrom, to);
+  if (wasSelected) { state.selectedIndex = to; highlightSelected(); }
+});
+
+/* --- クリックで編集 --- */
+grid.addEventListener('click', e => {
+  if (e.target.closest('#addCardBtn')) { addCard(); return; }
+  const card = e.target.closest('.app-card');
+  if (card) openDrawer(Number(card.dataset.index));
+});
+
+/* ============================================================
+   編集ドロワー
+   ============================================================ */
+function openDrawer(i) {
+  state.selectedIndex = i;
+  highlightSelected();
+  buildForm();
+  $('drawer').classList.add('open');
+  $('drawer').removeAttribute('aria-hidden');
+  $('drawerBackdrop').classList.add('open');
+  const first = $('drawerBody').querySelector('input, textarea');
+  if (first && !state.apps[i].id) first.focus();
+}
+
+function closeDrawer() {
+  $('drawer').classList.remove('open');
+  $('drawer').setAttribute('aria-hidden', 'true');
+  $('drawerBackdrop').classList.remove('open');
+  state.selectedIndex = -1;
+  highlightSelected();
+}
+
+function cur() { return state.apps[state.selectedIndex]; }
+
+function field(key, label, { type = 'text', placeholder = '', help = '', required = false, list = '' } = {}) {
+  const app = cur();
+  const val = app[key] ?? '';
+  const control = type === 'textarea'
+    ? `<textarea class="ed-textarea" data-key="${key}" placeholder="${esc(placeholder)}">${esc(val)}</textarea>`
+    : `<input class="ed-input" type="${type}" data-key="${key}" value="${esc(val)}" placeholder="${esc(placeholder)}" ${list ? `list="${list}"` : ''}>`;
+  return `<div class="ed-field">
+    <label>${esc(label)}${required ? '<span class="req">*</span>' : ''}</label>
+    ${control}
+    ${help ? `<div class="ed-help">${help}</div>` : ''}
+  </div>`;
+}
+
+function buildForm() {
+  const app = cur();
+  if (!app) return;
+  $('drawerTitle').textContent = app.name || app.id || 'カードを編集';
+
+  const categories = [...new Set(state.apps.map(a => a.category).filter(Boolean))];
+  const iconPreview = app.iconImage
+    ? `<img src="${esc(state.imageUrls.get(app.iconImage) || app.iconImage)}" alt="">`
+    : esc(app.icon || '📦');
+
+  const thumbs = (app.images || []).map((src, k) => `
+    <div class="ed-thumb">
+      <img src="${esc(state.imageUrls.get(src) || src)}" alt="" title="${esc(src)}">
+      <span class="num">${k + 1}</span>
+      <div class="ops">
+        <button type="button" data-img-op="left"  data-k="${k}" title="前へ" ${k === 0 ? 'disabled' : ''}>←</button>
+        <button type="button" data-img-op="right" data-k="${k}" title="後ろへ" ${k === app.images.length - 1 ? 'disabled' : ''}>→</button>
+        <button type="button" class="del" data-img-op="del" data-k="${k}" title="削除">✕</button>
+      </div>
+    </div>`).join('');
+
+  const dls = (app.downloads || []).map((d, k) => `
+    <div class="ed-dl-row">
+      <input type="radio" name="dlPrimary" data-dl-primary="${k}" ${d.primary ? 'checked' : ''} title="カードの DL ボタンに使う">
+      <input class="ed-input" data-dl="${k}" data-dl-key="label" value="${esc(d.label || '')}" placeholder="ラベル">
+      <input class="ed-input" data-dl="${k}" data-dl-key="url" value="${esc(d.url || '')}" placeholder="https://…">
+      <button type="button" class="ed-mini" data-dl-del="${k}" title="削除">✕</button>
+    </div>`).join('');
+
+  $('drawerBody').innerHTML = `
+    <div class="ed-section">
+      <div class="ed-section-label">基本情報</div>
+      <div class="ed-row">
+        ${field('id', 'ID (GitHub リポジトリ名)', { required: true, placeholder: 'Ninja-Gecho',
+          help: 'GitHub の <b>' + esc(state.owner) + '/&lt;ID&gt;</b> からリンクを取得します。画像は generated-assets/&lt;ID&gt;/ に保存されます。' })}
+        ${field('name', '表示名', { required: true, placeholder: 'Ninja_Gecho' })}
+      </div>
+      <div class="ed-row">
+        ${field('category', 'カテゴリ', { list: 'categoryList' })}
+        <datalist id="categoryList">${categories.map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+        <div class="ed-field narrow">
+          <label>バージョン</label>
+          <input class="ed-input" data-key="version" value="${esc(app.version ?? '')}" placeholder="1.0">
+        </div>
+        <div class="ed-field narrow">
+          <label>最終更新</label>
+          <input class="ed-input" data-key="lastUpdated" value="${esc(app.lastUpdated ?? '')}" placeholder="YYYY-MM-DD">
+        </div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-label">アイコン</div>
+      <div class="ed-icon-row">
+        <div class="ed-icon-preview" id="iconPreview" style="background:${esc(app.iconColor || '#607D8B')}">${iconPreview}</div>
+        <div style="flex:1">
+          <div class="ed-row">
+            <div class="ed-field" style="flex:0 0 90px">
+              <label>絵文字</label>
+              <input class="ed-input" data-key="icon" value="${esc(app.icon || '')}" placeholder="📦">
+            </div>
+            <div class="ed-field" style="flex:0 0 60px">
+              <label>背景色</label>
+              <input class="ed-color" type="color" data-key="iconColor" value="${esc(/^#[0-9a-f]{6}$/i.test(app.iconColor || '') ? app.iconColor : '#607D8B')}">
+            </div>
+            <div class="ed-field">
+              <label>アイコン画像</label>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <button type="button" class="ed-btn light" id="pickIconBtn" ${state.dirHandle ? '' : 'disabled'}>画像を選択</button>
+                ${app.iconImage ? `<button type="button" class="ed-link-btn" id="clearIconBtn">画像を外す</button>` : ''}
+              </div>
+            </div>
+          </div>
+          ${app.iconImage ? `<div class="ed-help">${esc(app.iconImage)}</div>` : '<div class="ed-help">画像未設定の場合は絵文字と背景色で表示されます</div>'}
+        </div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-label">説明文</div>
+      ${field('shortDescription', 'カード用の短い説明', { placeholder: '1〜2 行で' , help: 'カード上では 2 行までで省略されます' })}
+      ${field('description', '詳細説明', { type: 'textarea', placeholder: '空行で段落を分けられます' })}
+      ${field('about', '補足 (About)', { type: 'textarea', help: '現在の公開ページでは表示されません。メモとして保持されます' })}
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-label">主な機能 <span class="hint">1 行 1 項目</span></div>
+      <textarea class="ed-textarea" data-key="features" style="min-height:120px" placeholder="クリックした連続領域を透過する塗りつぶしモード">${esc((app.features || []).join('\n'))}</textarea>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-label">環境</div>
+      <div class="ed-row">
+        ${field('language', '作成言語', { placeholder: 'C# / .NET 8' })}
+        ${field('requirements', '動作環境', { placeholder: 'Windows 10 , Windows 11' })}
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-label">画像 <span class="hint">generated-assets/${esc(app.id || '<ID>')}/ に保存</span></div>
+      <div class="ed-thumbs" id="thumbs">
+        ${thumbs}
+        <button type="button" class="ed-thumb-add" id="addImageBtn" title="画像を追加" ${state.dirHandle && app.id ? '' : 'disabled'}>＋</button>
+      </div>
+      ${!state.dirHandle ? '<div class="ed-help">画像の追加にはフォルダを開く必要があります</div>' :
+        !app.id ? '<div class="ed-help">画像を追加するには先に ID を入力してください</div>' :
+        '<div class="ed-help">1 枚目がカードに表示されます。詳細モーダルでは全枚数がスライド表示されます</div>'}
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-label">ダウンロード / リンク
+        <button type="button" class="ed-link-btn" id="fetchGitHubBtn" style="margin-left:auto">⟳ GitHub から取得</button>
+      </div>
+      <div id="dlRows">${dls}</div>
+      <button type="button" class="ed-link-btn" id="addDlBtn">＋ リンクを追加</button>
+      <div class="ed-inline-status" id="ghStatus">${app.releaseTag ? 'リリース: ' + esc(app.releaseTag) : ''}${app.repoUrl ? ' · ' + esc(app.repoUrl) : ''}</div>
+      <div class="ed-help">「GitHub から取得」は ${esc(state.owner)}/${esc(app.id || '<ID>')} の最新リリースから DL リンク・バージョン・更新日を書き換えます。文章は変更しません。</div>
+    </div>
+  `;
+
+  bindForm();
+}
+
+function bindForm() {
+  const body = $('drawerBody');
+  const i = state.selectedIndex;
+
+  body.querySelectorAll('[data-key]').forEach(el => {
+    const handler = () => {
+      const app = cur();
+      const key = el.dataset.key;
+      if (key === 'features') {
+        app.features = el.value.split('\n').map(s => s.replace(/^(?:[・\-*•]+|\d+[.)])\s*/, '').trim()).filter(Boolean);
+      } else if (key === 'id') {
+        el.classList.toggle('invalid', !/^[A-Za-z0-9._-]*$/.test(el.value));
+        app.id = el.value.trim();
+      } else {
+        app[key] = el.value;
+      }
+      if (key === 'name') $('drawerTitle').textContent = app.name || app.id || 'カードを編集';
+      if (key === 'icon' || key === 'iconColor') updateIconPreview();
+      setDirty(true);
+      rerenderCard(i);
+    };
+    el.addEventListener('input', handler);
+    if (el.dataset.key === 'id') {
+      el.addEventListener('change', async () => {
+        await onIdChanged(el.value.trim());
+      });
+    }
+  });
+
+  body.querySelectorAll('[data-dl]').forEach(el => {
+    el.addEventListener('input', () => {
+      const app = cur();
+      app.downloads[Number(el.dataset.dl)][el.dataset.dlKey] = el.value;
+      setDirty(true); rerenderCard(i);
+    });
+  });
+  body.querySelectorAll('[data-dl-primary]').forEach(el => {
+    el.addEventListener('change', () => {
+      const app = cur();
+      const k = Number(el.dataset.dlPrimary);
+      app.downloads.forEach((d, j) => d.primary = j === k);
+      // primary を先頭に移動 (カードの DL ボタンは downloads[0] を使うため)
+      const [p] = app.downloads.splice(k, 1);
+      app.downloads.unshift(p);
+      setDirty(true); buildForm(); rerenderCard(i);
+    });
+  });
+  body.querySelectorAll('[data-dl-del]').forEach(el => {
+    el.addEventListener('click', () => {
+      const app = cur();
+      app.downloads.splice(Number(el.dataset.dlDel), 1);
+      if (app.downloads.length && !app.downloads.some(d => d.primary)) app.downloads[0].primary = true;
+      setDirty(true); buildForm(); rerenderCard(i);
+    });
+  });
+  $('addDlBtn').addEventListener('click', () => {
+    const app = cur();
+    app.downloads = app.downloads || [];
+    app.downloads.push({ label: '', url: '', primary: app.downloads.length === 0 });
+    setDirty(true); buildForm();
+    const rows = $('dlRows').querySelectorAll('.ed-dl-row');
+    rows[rows.length - 1]?.querySelector('[data-dl-key="label"]')?.focus();
+  });
+
+  $('fetchGitHubBtn').addEventListener('click', async () => {
+    const idx = state.selectedIndex;
+    try { await fetchLinksFor(idx, true); }
+    catch (e) {
+      const el = $('ghStatus');
+      if (el && state.selectedIndex === idx) { el.textContent = e.message; el.className = 'ed-inline-status err'; }
+    }
+  });
+
+  body.querySelectorAll('[data-img-op]').forEach(el => {
+    el.addEventListener('click', () => imageOp(el.dataset.imgOp, Number(el.dataset.k)));
+  });
+  $('addImageBtn').addEventListener('click', () => $('imageFileInput').click());
+  $('pickIconBtn').addEventListener('click', () => $('iconFileInput').click());
+  $('clearIconBtn')?.addEventListener('click', async () => {
+    const app = cur();
+    const old = app.iconImage;
+    app.iconImage = null;
+    if (isLocalAsset(old) && state.dirHandle && confirm('アイコン画像ファイルも削除しますか？ (保存時に削除されます)')) {
+      pendingDeletes.add(old);
+    }
+    setDirty(true); buildForm(); rerenderCard(i);
+  });
+}
+
+function updateIconPreview() {
+  const app = cur();
+  const el = $('iconPreview');
+  if (!el) return;
+  el.style.background = app.iconColor || '#607D8B';
+  if (!app.iconImage) el.textContent = app.icon || '📦';
+}
+
+/* ID 変更時: 既存の画像を新しい ID のフォルダへコピーし、旧ファイルは保存時に削除する */
+async function onIdChanged(newId) {
+  const app = cur();
+  const paths = [...new Set([...(app.images || []), app.iconImage].filter(isLocalAsset))];
+  if (!paths.length || !state.dirHandle) { buildForm(); return; }
+  const oldDir = paths[0].split('/')[1];
+  if (!newId || oldDir === newId || !isValidId(newId)) { buildForm(); return; }
+  if (!confirm(`画像フォルダを generated-assets/${oldDir}/ から generated-assets/${newId}/ に移動しますか？`)) {
+    buildForm(); return;
+  }
+  const moves = paths.map(from => ({ from, to: `${EDITOR.assetsDir}/${newId}/${from.split('/').pop()}` }));
+  try {
+    for (const { to } of moves) {
+      if (await fileExists(to)) throw new Error(`移動先が既に存在します: ${to}`);
+    }
+    for (const { from, to } of moves) {
+      const file = await (await getHandleByPath(from)).getFile();
+      await writeBlob(to, file);
+      state.imageUrls.set(to, URL.createObjectURL(file));
+    }
+    // 全コピー成功後に参照を切り替え、旧ファイルの削除は保存時まで保留
+    const remap = p => { const m = moves.find(x => x.from === p); return m ? m.to : p; };
+    app.images = (app.images || []).map(remap);
+    if (app.iconImage) app.iconImage = remap(app.iconImage);
+    moves.forEach(({ from }) => pendingDeletes.add(from));
+    toast(`画像を generated-assets/${newId}/ にコピーしました。旧ファイルは保存時に削除されます`);
+  } catch (e) {
+    toast('画像フォルダの移動に失敗: ' + e.message);
+  }
+  setDirty(true); buildForm(); rerenderCard(state.selectedIndex);
+}
+
+function isLocalAsset(p) {
+  return typeof p === 'string' && p.startsWith(EDITOR.assetsDir + '/');
+}
+
+/* ============================================================
+   画像操作
+   ============================================================ */
+async function imageOp(op, k) {
+  const app = cur();
+  const i = state.selectedIndex;
+  if (op === 'left' && k > 0) {
+    [app.images[k - 1], app.images[k]] = [app.images[k], app.images[k - 1]];
+  } else if (op === 'right' && k < app.images.length - 1) {
+    [app.images[k + 1], app.images[k]] = [app.images[k], app.images[k + 1]];
+  } else if (op === 'del') {
+    const p = app.images[k];
+    if (!confirm(`${k + 1} 枚目の画像を外しますか？`)) return;
+    app.images.splice(k, 1);
+    if (isLocalAsset(p) && state.dirHandle && confirm(`ファイル ${p} も削除しますか？ (保存時に削除されます)`)) {
+      pendingDeletes.add(p);
+    }
+  }
+  setDirty(true); buildForm(); rerenderCard(i);
+}
+
+/* 未使用の card-NN.<ext> を返す (apps.js 上の参照とフォルダ内の実ファイルの両方を避ける) */
+async function nextImagePath(app, ext) {
+  const used = new Set((app.images || []).map(p => p.split('/').pop().replace(/\.[^.]+$/, '')));
+  for (let n = 1; n < 1000; n++) {
+    const stem = `card-${String(n).padStart(2, '0')}`;
+    if (used.has(stem)) continue;
+    const path = `${EDITOR.assetsDir}/${app.id}/${stem}${ext}`;
+    if (!(await fileExists(path))) return path;
+  }
+  return `${EDITOR.assetsDir}/${app.id}/card-${Date.now()}${ext}`;
+}
+
+function extOf(file) {
+  const m = file.name.match(/\.[A-Za-z0-9]+$/);
+  if (m) return m[0].toLowerCase();
+  return { 'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp', 'image/gif': '.gif', 'image/x-icon': '.ico' }[file.type] || '.png';
+}
+
+$('imageFileInput').addEventListener('change', async e => {
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+  const app = cur();
+  if (!app || !files.length || !state.dirHandle) return;
+  if (!isValidId(app.id)) { toast('先に正しい ID を入力してください (英数字 . _ - のみ)'); return; }
+  app.images = app.images || [];
+  let added = 0;
+  for (const file of files) {
+    const path = await nextImagePath(app, extOf(file));
+    try {
+      await writeBlob(path, file);
+      state.imageUrls.set(path, URL.createObjectURL(file));
+      app.images.push(path);
+      added++;
+    } catch (err) {
+      toast(`${file.name} の保存に失敗: ${err.message}`);
+    }
+  }
+  if (added) { setDirty(true); buildForm(); rerenderCard(state.selectedIndex); toast(`${added} 枚の画像を追加しました`); }
+});
+
+$('iconFileInput').addEventListener('change', async e => {
+  const file = (e.target.files || [])[0];
+  e.target.value = '';
+  const app = cur();
+  if (!app || !file || !state.dirHandle) return;
+  if (!isValidId(app.id)) { toast('先に正しい ID を入力してください (英数字 . _ - のみ)'); return; }
+  const path = `${EDITOR.assetsDir}/${app.id}/icon${extOf(file)}`;
+  try {
+    await writeBlob(path, file);
+    if (state.imageUrls.has(path)) URL.revokeObjectURL(state.imageUrls.get(path));
+    state.imageUrls.set(path, URL.createObjectURL(file));
+    app.iconImage = path;
+    setDirty(true); buildForm(); rerenderCard(state.selectedIndex);
+  } catch (err) {
+    toast('アイコンの保存に失敗: ' + err.message);
+  }
+});
+
+/* ============================================================
+   GitHub からリンク情報を取得
+   ============================================================ */
+function ghHeaders() {
+  const h = { Accept: 'application/vnd.github+json' };
+  const t = $('tokenInput').value.trim();
+  if (t) h.Authorization = 'Bearer ' + t;
+  return h;
+}
+
+async function ghJson(url) {
+  const res = await fetch(url, { headers: ghHeaders() });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const limited = res.status === 429 ||
+      (res.status === 403 && (res.headers.get('x-ratelimit-remaining') === '0' || /rate limit/i.test(body.message || '')));
+    if (limited) {
+      const err = new Error('GitHub API のレート制限に達しました。Token を入力するか時間をおいてください');
+      err.code = 'GITHUB_RATE_LIMIT';
+      throw err;
+    }
+    throw new Error(`GitHub API ${res.status}${body.message ? ': ' + body.message : ''}`);
+  }
+  return res.json();
+}
+
+/* 自動生成したリンク (リポジトリ本体 / releases 配下) かどうか。wiki や issues など手動追加分は残す */
+function isManagedGitHubLink(d, repoUrl) {
+  try {
+    const url = new URL(d.url);
+    const repo = new URL(repoUrl);
+    const base = repo.pathname.replace(/\/$/, '');
+    const path = url.pathname.replace(/\/$/, '');
+    return url.origin === repo.origin && (path === base || path.startsWith(base + '/releases/'));
+  } catch {
+    return false;
+  }
+}
+
+function isValidId(id) {
+  return /^[A-Za-z0-9._-]+$/.test(id || '') && !/^\.+$/.test(id);
+}
+
+/* 1 件分のリンク情報を GitHub から取り直す。戻り値: { changed, error, summary } */
+async function fetchLinksFor(i, interactive) {
+  const app = state.apps[i];
+  // buildForm() で要素が作り直されるため、毎回取得し直す
+  const say = (msg, cls) => {
+    if (!interactive || state.selectedIndex !== i) return;
+    const el = $('ghStatus');
+    if (el) { el.textContent = msg; el.className = 'ed-inline-status ' + (cls || ''); }
+  };
+  if (!isValidId(app.id)) { say('ID を正しく入力してください (英数字 . _ - のみ)', 'err'); return { changed: false, error: `${app.id || '(空)'}: ID が不正` }; }
+  const owner = state.owner;
+  const requestedId = app.id;
+  const base = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(requestedId)}`;
+  say(`${owner}/${requestedId} を確認中…`);
+
+  const repo = await ghJson(base);
+  if (!repo) { say(`リポジトリ ${owner}/${requestedId} が見つかりません`, 'err'); return { changed: false, error: `${requestedId}: リポジトリなし` }; }
+  const rel = await ghJson(`${base}/releases/latest`);
+  if (!state.apps.includes(app) || app.id !== requestedId) {
+    return { changed: false, error: `${requestedId}: 取得中にカードが変更されたため反映しませんでした` };
+  }
+
+  const before = JSON.stringify(app);
+  const managedRepos = [app.repoUrl, repo.html_url].filter(Boolean);
+  const custom = (app.downloads || []).filter(d => d.url && !managedRepos.some(b => isManagedGitHubLink(d, b)));
+
+  const downloads = [];
+  if (rel && rel.assets && rel.assets.length) {
+    downloads.push({ label: `最新版をダウンロード (${rel.tag_name})`, url: rel.assets[0].browser_download_url, primary: true });
+    rel.assets.slice(1).forEach(a => downloads.push({ label: a.name, url: a.browser_download_url, primary: false }));
+  } else if (rel) {
+    downloads.push({ label: `リリースページを開く (${rel.tag_name})`, url: rel.html_url, primary: true });
+  }
+  downloads.push({ label: 'GitHubリポジトリを開く', url: repo.html_url, primary: downloads.length === 0 });
+  custom.forEach(d => downloads.push({ ...d, primary: false }));
+
+  app.downloads = downloads;
+  app.repoUrl = repo.html_url;
+  if (rel) {
+    app.releaseTag = rel.tag_name || '';
+    app.version = (rel.tag_name || '').replace(/^v/i, '') || app.version;
+    app.lastUpdated = (rel.published_at || rel.created_at || '').slice(0, 10) || app.lastUpdated;
+  } else {
+    // リリースが消えている場合は古いバージョン表記を残さない
+    app.releaseTag = '';
+    app.version = '-';
+    app.lastUpdated = (repo.pushed_at || repo.updated_at || '').slice(0, 10) || app.lastUpdated;
+  }
+  if (!app.about && repo.description) app.about = repo.description.replace(/\s*\/\/\s*/g, '\n');
+
+  const changed = JSON.stringify(app) !== before;
+  if (changed) setDirty(true);
+  if (interactive) { buildForm(); rerenderCard(i); }
+  say(rel
+    ? `取得しました: ${rel.tag_name} (${(rel.published_at || '').slice(0, 10)}) · アセット ${rel.assets?.length || 0} 件${changed ? '' : ' · 変更なし'}`
+    : 'リリースがありません。リポジトリへのリンクのみ設定しました', rel ? 'ok' : '');
+  return { changed, error: null, summary: `${app.id}: ${rel ? rel.tag_name : 'リリースなし'}` };
+}
+
+async function refreshAllLinks() {
+  if (!state.apps.length) return;
+  const btn = $('refreshAllBtn');
+  btn.disabled = true;
+  const changes = [];
+  const errors = [];
+  try {
+    for (let i = 0; i < state.apps.length; i++) {
+      const app = state.apps[i];
+      if (!app.id) continue;
+      setStatus(`リンク更新中… ${i + 1}/${state.apps.length} ${app.id}`);
+      try {
+        const r = await fetchLinksFor(i, false);
+        if (r.error) errors.push(r.error);
+        else if (r.changed) changes.push(r.summary);
+      } catch (e) {
+        errors.push(`${app.id}: ${e.message}`);
+        if (e.code === 'GITHUB_RATE_LIMIT') break;
+      }
+    }
+  } finally {
+    btn.disabled = false;
+  }
+  renderGrid();
+  if (state.selectedIndex >= 0) buildForm();
+  const msg = [
+    changes.length ? `更新: ${changes.join(', ')}` : '変更はありませんでした',
+    errors.length ? `エラー: ${errors.join(' / ')}` : '',
+  ].filter(Boolean).join('\n');
+  setStatus(changes.length ? `${changes.length} 件のリンクを更新しました (未保存)` : 'すべて最新です', errors.length ? 'warn' : '');
+  toast(msg);
+}
+
+/* ============================================================
+   プレビュー (公開ページと同じモーダル)
+   ============================================================ */
+let _stopSlides = null;
+function openPreview() {
+  const app = cur();
+  if (!app) return;
+  const n = PortalRender.normalize(app, state.selectedIndex);
+  const imagesEl = $('modalImages');
+  imagesEl.innerHTML = PortalRender.modalImagesHTML(n.images);
+  $('modalBody').innerHTML = PortalRender.modalBodyHTML(n);
+  if (_stopSlides) _stopSlides();
+  _stopSlides = PortalRender.initModalSlides(imagesEl, {
+    interval: (typeof GH_CONFIG !== 'undefined') ? GH_CONFIG.slideInterval : 6000,
+    onImageClick: src => {
+      $('imageModalImg').src = src;
+      $('imageModalOverlay').classList.add('open');
+      $('imageModalOverlay').removeAttribute('aria-hidden');
+    },
+  });
+  $('modalOverlay').classList.add('open');
+  $('modalOverlay').removeAttribute('aria-hidden');
+}
+function closePreview() {
+  if (_stopSlides) { _stopSlides(); _stopSlides = null; }
+  closeImagePreview();
+  $('modalOverlay').classList.remove('open');
+  $('modalOverlay').setAttribute('aria-hidden', 'true');
+}
+function closeImagePreview() {
+  const o = $('imageModalOverlay');
+  if (!o.classList.contains('open')) return;
+  o.classList.remove('open');
+  o.setAttribute('aria-hidden', 'true');
+  $('imageModalImg').src = '';
+}
+
+/* ============================================================
+   UI ユーティリティ
+   ============================================================ */
+function setStatus(msg, cls) {
+  const el = $('statusText');
+  el.textContent = msg;
+  el.className = 'ed-status ' + (cls || '');
+}
+function setDirty(v) {
+  state.dirty = v;
+  $('dirtyDot').classList.toggle('on', v);
+  document.title = (v ? '● ' : '') + 'カードエディタ - アプリ配布ポータル';
+}
+function showNotice(html, kind) {
+  $('noticeBox').innerHTML = html;
+  $('noticeBox').className = 'ed-notice-box ' + (kind === 'info' ? 'info' : '');
+  $('noticeArea').hidden = false;
+}
+function hideNotice() { $('noticeArea').hidden = true; }
+let _toastTimer = null;
+function toast(msg) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 4200);
+}
+
+/* ============================================================
+   イベント
+   ============================================================ */
+$('openFolderBtn').addEventListener('click', openFolder);
+$('saveBtn').addEventListener('click', saveAll);
+$('refreshAllBtn').addEventListener('click', refreshAllLinks);
+$('drawerClose').addEventListener('click', closeDrawer);
+$('doneBtn').addEventListener('click', closeDrawer);
+$('drawerBackdrop').addEventListener('click', closeDrawer);
+$('deleteBtn').addEventListener('click', () => deleteCard(state.selectedIndex));
+$('moveUpBtn').addEventListener('click', () => moveCard(state.selectedIndex, state.selectedIndex - 1));
+$('moveDownBtn').addEventListener('click', () => moveCard(state.selectedIndex, state.selectedIndex + 1));
+$('previewBtn').addEventListener('click', openPreview);
+$('modalClose').addEventListener('click', closePreview);
+$('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closePreview(); });
+$('imageModalClose').addEventListener('click', closeImagePreview);
+$('imageModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeImagePreview(); });
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    e.preventDefault();
+    if (!$('saveBtn').disabled) saveAll();
+    return;
+  }
+  if (e.key === 'Escape') {
+    if ($('imageModalOverlay').classList.contains('open')) { closeImagePreview(); return; }
+    if ($('modalOverlay').classList.contains('open')) { closePreview(); return; }
+    if ($('drawer').classList.contains('open')) closeDrawer();
+  }
+});
+
+window.addEventListener('beforeunload', e => {
+  if (!state.dirty) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+/* ============================================================
+   起動
+   ============================================================ */
+function withTimeout(promise, ms, fallback) {
+  return Promise.race([promise, new Promise(r => setTimeout(() => r(fallback), ms))]);
+}
+
+/* ?edit=<ID> で指定カードを開いた状態で起動する */
+function openFromQuery() {
+  const id = new URLSearchParams(location.search).get('edit');
+  if (!id) return;
+  const idx = state.apps.findIndex(a => a.id === id);
+  if (idx < 0) return;
+  openDrawer(idx);
+  if (new URLSearchParams(location.search).get('preview') === '1') openPreview();
+}
+
+(async () => {
+  if (!supportsFS) {
+    showNotice('このブラウザは File System Access API に対応していないため、<b>閲覧とリンク更新のみ</b>可能です。apps.js の保存はダウンロード、画像の追加は無効になります。Chrome / Edge で開くと直接保存できます。', 'warn');
+    if (location.protocol !== 'file:') {
+      await loadAll();
+      openFromQuery();
+    } else {
+      setStatus('ローカルサーバー経由で開くか、Chrome / Edge を使用してください', 'err');
+    }
+    return;
+  }
+
+  // http 経由なら先に閲覧用として読み込む (保存はフォルダを開いてから直接書き込み)
+  if (location.protocol !== 'file:') {
+    await loadAll();
+    setStatus('閲覧モード: 「フォルダを開く」でリポジトリフォルダを選択すると直接保存できます', 'warn');
+    openFromQuery();
+  }
+
+  const prev = await withTimeout(loadHandle(), 1500, null);
+  if (prev) {
+    $('folderName').textContent = prev.name + ' (再接続待ち)';
+    showNotice(`前回開いたフォルダ「<b>${esc(prev.name)}</b>」を記憶しています。<button type="button" class="ed-btn light" id="reconnectBtn" style="margin-left:8px">再接続する</button>`, 'info');
+    $('reconnectBtn').addEventListener('click', async () => {
+      try { await useHandle(prev); openFromQuery(); } catch (e) { setStatus('再接続に失敗: ' + e.message, 'err'); }
+    });
+    if (location.protocol === 'file:') setStatus('「再接続する」または「フォルダを開く」を押してください');
+  } else if (location.protocol === 'file:') {
+    setStatus('「フォルダを開く」でリポジトリフォルダを選択してください');
+  }
+})();
+</script>
+</body>
+</html>

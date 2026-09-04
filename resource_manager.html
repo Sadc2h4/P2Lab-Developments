@@ -209,7 +209,7 @@
     <div class="grid">
       <label>
         GitHubアカウント / Org
-        <input id="owner" value="P2-Lab-C2H4" autocomplete="off">
+        <input id="owner" value="Sadc2h4" autocomplete="off">
       </label>
       <label>
         種別
@@ -389,7 +389,7 @@ function parseAppInfo(text) {
     shortDescription: (summaryLines[0] || '').trim(),
     overview: overviewLines.join('\n').trim(),
     features: getSection(sections, ['主な機能', '機能', 'Features'])
-      .map(line => line.replace(/^[・\-*•\d.]+\s*/, '').trim())
+      .map(line => line.replace(/^(?:[・\-*•]+|\d+[.)])\s*/, '').trim())
       .filter(Boolean),
     language: getSection(sections, ['作成言語', '開発言語', '使用言語', 'Language']).join(' / ').trim() || '-',
     requirements: getSection(sections, ['動作環境', '環境', 'Requirements']).join(' / ').trim() || '-',
