@@ -52,7 +52,7 @@ const apps = [
     "iconColor": "#2B78D3",
     "iconImage": null,
     "category": "Utility",
-    "version": "1.0",
+    "version": "1.2",
     "lastUpdated": "2026-05-13",
     "requirements": "Windows 10 , Windows 11",
     "language": "Electron / JavaScript",
@@ -66,8 +66,8 @@ const apps = [
     ],
     "downloads": [
       {
-        "label": "最新版をダウンロード (v1.0)",
-        "url": "https://github.com/Sadc2h4/GitHub-Deploy-Tool/releases/download/v1.0/GitHub-Deploy-Tool_v1.0.zip",
+        "label": "最新版をダウンロード (v1.2)",
+        "url": "https://github.com/Sadc2h4/GitHub-Deploy-Tool/releases/download/v1.2/GitHub-Deploy-Tool_v1.2.zip",
         "primary": true
       },
       {
@@ -83,7 +83,7 @@ const apps = [
     ],
     "repoUrl": "https://github.com/Sadc2h4/GitHub-Deploy-Tool",
     "about": "本アプリケーションはGit bashでの手動のデプロイで操作ミスすることを防ぐために作成しました．扱いやすいelectron UIでデプロイ操作を簡略化できます．",
-    "releaseTag": "v1.0",
+    "releaseTag": "v1.2",
     "_source": "resource-manager"
   },
   {
@@ -95,8 +95,8 @@ const apps = [
     "iconColor": "#2B78D3",
     "iconImage": null,
     "category": "Pikmin Hack",
-    "version": "1.25a",
-    "lastUpdated": "2026-04-25",
+    "version": "1.28b",
+    "lastUpdated": "2026-06-21",
     "requirements": "Windows10，Windows11",
     "language": "C#.NET 4.8 win x64",
     "features": [
@@ -108,8 +108,8 @@ const apps = [
     ],
     "downloads": [
       {
-        "label": "最新版をダウンロード (v1.25a)",
-        "url": "https://github.com/Sadc2h4/Hocotate-Tool-Kit/releases/download/v1.25a/Hocotate_Toolkit_v1.25a.zip",
+        "label": "最新版をダウンロード (v1.28b)",
+        "url": "https://github.com/Sadc2h4/Hocotate-Tool-Kit/releases/download/v1.28b/Hocotate_Toolkit_v1.28b.zip",
         "primary": true
       },
       {
@@ -125,7 +125,7 @@ const apps = [
     ],
     "repoUrl": "https://github.com/Sadc2h4/Hocotate-Tool-Kit",
     "about": "This application is a multi-purpose command-line tool for working with Nintendo GameCube / Wii archive and 3D model formats used in Pikmin 2.   It supports 8 conversion modes and accepts files via drag & drop, command-line arguments, or Windows right-click context menu.",
-    "releaseTag": "v1.25a",
+    "releaseTag": "v1.28b",
     "_source": "resource-manager"
   },
   {
@@ -381,15 +381,15 @@ const apps = [
     "iconColor": "#2B78D3",
     "iconImage": null,
     "category": "Image Tool / 画像編集",
-    "version": "1.1",
-    "lastUpdated": "2026-05-14",
+    "version": "1.4",
+    "lastUpdated": "2026-05-31",
     "requirements": "Windows 10 , Windows 11 / x64",
     "language": "C# / .NET 8 / Windows Forms",
     "features": [],
     "downloads": [
       {
-        "label": "最新版をダウンロード (v1.1)",
-        "url": "https://github.com/Sadc2h4/Ninja-Gecho/releases/download/v1.1/Ninja_Gecho_v1.1.zip",
+        "label": "最新版をダウンロード (v1.4)",
+        "url": "https://github.com/Sadc2h4/Ninja-Gecho/releases/download/v1.4/Ninja_Gecho_v1.4.zip",
         "primary": true
       },
       {
@@ -401,7 +401,7 @@ const apps = [
     "images": [],
     "repoUrl": "https://github.com/Sadc2h4/Ninja-Gecho",
     "about": "本アプリケーションは画像の背景や指定した場所を手軽に透過して保存するために作成されました。画像の透過以外にも解像度を維持したサイズ変更するなど、手作業だと調整が大変な作業も簡単に実施できるようにしています。",
-    "releaseTag": "v1.1",
+    "releaseTag": "v1.4",
     "_source": "resource-manager"
   },
   {
