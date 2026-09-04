@@ -385,7 +385,16 @@ const apps = [
     "lastUpdated": "2026-05-31",
     "requirements": "Windows 10 , Windows 11 / x64",
     "language": "C# / .NET 8 / Windows Forms",
-    "features": [],
+    "features": [
+      "クリックした連続領域を透過する塗りつぶしモード",
+      "主線の切れ目を保護する protected bucket mode",
+      "クリックした色に近い全体色を透過する色選択モード",
+      "四角形範囲の透過",
+      "16x16 消しゴムによる部分透過",
+      "ふちの半端な色を目立たなくするフィニッシュ処理",
+      "現在の拡大率で pixel-perfect PNG 保存",
+      "PNG の透明度を維持したコピー＆ペースト"
+    ],
     "downloads": [
       {
         "label": "最新版をダウンロード (v1.4)",
@@ -398,7 +407,9 @@ const apps = [
         "primary": false
       }
     ],
-    "images": [],
+    "images": [
+      "generated-assets/Ninja_Gecho-card-01.png"
+    ],
     "repoUrl": "https://github.com/Sadc2h4/Ninja-Gecho",
     "about": "本アプリケーションは画像の背景や指定した場所を手軽に透過して保存するために作成されました。画像の透過以外にも解像度を維持したサイズ変更するなど、手作業だと調整が大変な作業も簡単に実施できるようにしています。",
     "releaseTag": "v1.4",
