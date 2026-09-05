@@ -57,6 +57,33 @@ body {
   gap: 16px;
 }
 
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 8px 16px 8px 12px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  border-radius: 22px;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.18);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.back-link:hover {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.22);
+}
+.back-link:active { transform: translateY(0); }
+.back-link:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.back-link svg { flex-shrink: 0; }
+.back-link[hidden] { display: none; }
+
 .brand {
   display: flex;
   align-items: center;
@@ -839,8 +866,9 @@ body {
    Responsive
    =========================== */
 @media (max-width: 640px) {
-  .header-inner      { padding: 10px 16px; }
+  .header-inner      { padding: 10px 16px; gap: 10px; }
   .brand-name        { display: none; }
+  .back-link         { padding: 7px 12px 7px 10px; font-size: 12.5px; }
   .hero              { padding: 40px 16px 36px; }
   .hero-inner.has-text-bg { padding: 14px 18px; border-radius: 14px; }
   .main              { padding: 20px 16px 48px; }
