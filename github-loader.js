@@ -513,6 +513,8 @@ function _parsePageConfig(text, assetResolver) {
     siteIconImage:  asset(siteIconImageValue),
     accentColor:    get('アクセントカラー','ボタン色',        'accent_color')[0]  || null,
     navColor:       get('ナビ色',         'ナビゲーション色', 'nav_color')[0]     || null,
+    backUrl:        get('メインページURL', '戻り先URL',       'back_url', 'main_page_url')[0] || null,
+    backLabel:      get('メインページボタン文字', '戻り先ラベル', 'back_label')[0] || null,
 
     // ヒーローエリア
     heroColor1:     heroColors[0] || null,
@@ -542,6 +544,8 @@ function _parsePageConfig(text, assetResolver) {
    ◆ サイトアイコン画像     ← 左上アイコン画像 / favicon (例: favicon.ico)
    ◆ アクセントカラー       ← ボタン・リンク色 (例: #0071E3)
    ◆ ナビ色                 ← 上部ナビバー背景色 (例: #1A1A2E)
+   ◆ メインページURL        ← ナビバー左端「メインページへ戻る」ボタンの遷移先 (「なし」で非表示)
+   ◆ メインページボタン文字 ← そのボタンの文字 (例: メインページへ戻る)
 
    ◆ ヘッダー色             ← ヒーロー背景色 (1行=単色 / 2行=グラデーション)
    ◆ ヘッダー画像           ← ヒーロー背景画像 (URL or リポジトリ内パス)

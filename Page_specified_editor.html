@@ -248,6 +248,16 @@
     .pv-nav-name {
       color: #fff; font-size: 13px; font-weight: 700;
     }
+    .pv-back {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px 4px 8px;
+      background: var(--accent);
+      color: #fff; font-size: 11px; font-weight: 700;
+      border-radius: 14px; white-space: nowrap; flex-shrink: 0;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+      transition: background 0.3s;
+    }
+    .pv-back[hidden] { display: none; }
 
     .pv-hero {
       padding: 28px 16px;
@@ -493,6 +503,16 @@
               <button class="color-clear" onclick="clearColor('navColor','navSw')" title="クリア">✕</button>
             </div>
           </div>
+
+          <div class="field">
+            <div class="field-label">メインページURL（戻るボタンの遷移先） <span class="opt">省略可 / 「なし」で非表示</span></div>
+            <input type="text" class="field-input" id="backUrl" placeholder="例: https://mesia-art2.carrd.co/" oninput="update()">
+          </div>
+
+          <div class="field">
+            <div class="field-label">メインページボタン文字 <span class="opt">省略可</span></div>
+            <input type="text" class="field-input" id="backLabel" placeholder="例: メインページへ戻る" oninput="update()">
+          </div>
         </div>
 
         <!-- ── ヒーローエリア ── -->
@@ -665,6 +685,7 @@
       <div style="padding-top:12px;">
         <div class="preview-wrap">
           <div class="pv-nav" id="pvNav">
+            <span class="pv-back" id="pvBack">← <span id="pvBackLabel">メインページへ戻る</span></span>
             <div class="pv-icon" id="pvIcon">⚙</div>
             <span class="pv-nav-name" id="pvName">（サイト名）</span>
           </div>
@@ -845,6 +866,12 @@ function updatePreview() {
   }
   document.getElementById('pvName').textContent   = v('siteTitle') || '（サイト名）';
 
+  // メインページへ戻るボタン
+  const pvBack = document.getElementById('pvBack');
+  pvBack.hidden = /^(なし|none|off|hidden)$/i.test(v('backUrl') || '');
+  pvBack.style.background = acc;
+  document.getElementById('pvBackLabel').textContent = v('backLabel') || 'メインページへ戻る';
+
   // ヒーロー背景
   const heroEl = document.getElementById('pvHero');
   heroEl.style.backgroundImage = '';
@@ -935,6 +962,8 @@ function generateText() {
   add('サイトアイコン画像',  v('siteIconImage'));
   add('アクセントカラー',   v('accentColor'));
   add('ナビ色',             v('navColor'));
+  add('メインページURL',    v('backUrl'));
+  add('メインページボタン文字', v('backLabel'));
 
   if (radio('heroBg') === 'image') {
     add('ヘッダー画像', v('heroImg'));
@@ -1062,6 +1091,8 @@ function parseAndFill(text) {
   }
   setCol('accentColor','accentSw', get('アクセントカラー','ボタン色','accent_color')[0]);
   setCol('navColor',  'navSw',    get('ナビ色','ナビゲーション色','nav_color')[0]);
+  setVal('backUrl',   get('メインページURL','戻り先URL','back_url','main_page_url')[0]);
+  setVal('backLabel', get('メインページボタン文字','戻り先ラベル','back_label')[0]);
 
   const heroImgVal = get('ヘッダー画像','hero_image')[0];
   if (heroImgVal) {

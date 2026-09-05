@@ -23,7 +23,7 @@ App_icon.ico
 #30A19F
 
 ◆ メインページURL
-https://mesia-art2.carrd.co/
+https://p2-lab-works.carrd.co/
 
 ◆ メインページボタン文字
 メインページへ戻る

@@ -889,11 +889,13 @@ function buildForm() {
               <label>アイコン画像</label>
               <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
                 <button type="button" class="ed-btn light" id="pickIconBtn" ${state.dirHandle ? '' : 'disabled'}>画像を選択</button>
+                <button type="button" class="ed-btn light" id="fetchIconBtn" ${state.dirHandle && app.id ? '' : 'disabled'} title="リポジトリ内の .ico / ロゴ画像を探して generated-assets/<ID>/icon.* に保存します">⟳ GitHub から取得</button>
                 ${app.iconImage ? `<button type="button" class="ed-link-btn" id="clearIconBtn">画像を外す</button>` : ''}
               </div>
             </div>
           </div>
-          ${app.iconImage ? `<div class="ed-help">${esc(app.iconImage)}</div>` : '<div class="ed-help">画像未設定の場合は絵文字と背景色で表示されます</div>'}
+          <div class="ed-inline-status" id="iconStatus"></div>
+          ${app.iconImage ? `<div class="ed-help">${esc(app.iconImage)}</div>` : '<div class="ed-help">画像未設定の場合は絵文字と背景色で表示されます。「GitHub から取得」でリポジトリ同梱の exe 用アイコン (.ico) を探します</div>'}
         </div>
       </div>
     </div>
@@ -936,7 +938,7 @@ function buildForm() {
       <div id="dlRows">${dls}</div>
       <button type="button" class="ed-link-btn" id="addDlBtn">＋ リンクを追加</button>
       <div class="ed-inline-status" id="ghStatus">${app.releaseTag ? 'リリース: ' + esc(app.releaseTag) : ''}${app.repoUrl ? ' · ' + esc(app.repoUrl) : ''}</div>
-      <div class="ed-help">「GitHub から取得」は ${esc(state.owner)}/${esc(app.id || '<ID>')} の最新リリースから DL リンク・バージョン・更新日を書き換えます。文章は変更しません。</div>
+      <div class="ed-help">「GitHub から取得」は ${esc(state.owner)}/${esc(app.id || '<ID>')} の最新リリースから DL リンク・バージョン・更新日を書き換えます。文章は変更しません。アイコン画像が未設定ならリポジトリ内の .ico も探して保存します。</div>
     </div>
   `;
 
@@ -1021,6 +1023,18 @@ function bindForm() {
   });
   $('addImageBtn').addEventListener('click', () => $('imageFileInput').click());
   $('pickIconBtn').addEventListener('click', () => $('iconFileInput').click());
+  $('fetchIconBtn').addEventListener('click', async () => {
+    const idx = state.selectedIndex;
+    $('fetchIconBtn').disabled = true;
+    try { await fetchIconFor(idx, { force: true, interactive: true }); }
+    catch (e) {
+      const el = $('iconStatus');
+      if (el && state.selectedIndex === idx) { el.textContent = e.message; el.className = 'ed-inline-status err'; }
+    } finally {
+      const b = $('fetchIconBtn');
+      if (b) b.disabled = false;
+    }
+  });
   $('clearIconBtn')?.addEventListener('click', async () => {
     const app = cur();
     const old = app.iconImage;
@@ -1199,6 +1213,92 @@ function isValidId(id) {
   return /^[A-Za-z0-9._-]+$/.test(id || '') && !/^\.+$/.test(id);
 }
 
+/* ------------------------------------------------------------
+   リポジトリ同梱のアイコン画像 (exe 用 .ico / ロゴ) を探す
+   ------------------------------------------------------------ */
+const ICON_EXTS = ['.ico', '.png', '.svg', '.webp'];
+// 配布物・素材置き場など、アプリ本体のアイコンではない可能性が高いフォルダ
+const ICON_SKIP_DIRS = /^(dlpage_info|_internal|node_modules|dist|build|out|resources?|assets?|images?|img|docs?|samples?|sample_image|tests?|\.github)$/i;
+
+/* ツリー内の候補を採点して最も「アプリのアイコンらしい」ものを返す */
+function pickRepoIcon(tree) {
+  const cands = [];
+  for (const node of tree || []) {
+    if (node.type !== 'blob') continue;
+    const path = node.path;
+    const lower = path.toLowerCase();
+    const ext = ICON_EXTS.find(e => lower.endsWith(e));
+    if (!ext) continue;
+    const parts = path.split('/');
+    const name = parts[parts.length - 1].toLowerCase();
+    const dirs = parts.slice(0, -1);
+    if (dirs.some(d => ICON_SKIP_DIRS.test(d))) continue;
+    let score = 0;
+    if (ext === '.ico') score += 100;                 // exe 用アイコンが本命
+    if (/icon|logo/.test(name)) score += 40;         // exe_logo.ico, Toukaman_icon.ico など
+    if (/exe|app/.test(name)) score += 10;
+    if (/favicon|button|btn|blank|empty|checker|bg_|background|card/.test(name)) score -= 60;
+    score -= dirs.length * 25;                       // 浅いほど良い
+    if (typeof node.size === 'number' && node.size > 2 * 1024 * 1024) score -= 200;
+    cands.push({ path, ext, score, size: node.size });
+  }
+  cands.sort((a, b) => b.score - a.score || a.path.localeCompare(b.path));
+  const best = cands[0];
+  if (!best) return null;
+  // .ico 以外は名前に icon/logo が含まれるものだけ採用する (無関係な png を拾わない)
+  if (best.ext !== '.ico' && !/icon|logo/.test(best.path.split('/').pop().toLowerCase())) return null;
+  return best;
+}
+
+/* raw.githubusercontent.com から画像を取得 (CORS 許可済み・API レート制限に含まれない) */
+async function downloadRepoFile(owner, repoId, path) {
+  const url = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repoId)}/HEAD/` +
+    path.split('/').map(encodeURIComponent).join('/');
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`アイコンのダウンロードに失敗 (${res.status}): ${path}`);
+  return res.blob();
+}
+
+/* 1 件分のアイコン画像をリポジトリから取得して generated-assets/<ID>/icon.<ext> に保存する。
+   戻り値: { changed, error, summary, skipped } */
+async function fetchIconFor(i, { force = false, interactive = false } = {}) {
+  const app = state.apps[i];
+  const say = (msg, cls) => {
+    if (!interactive || state.selectedIndex !== i) return;
+    const el = $('iconStatus');
+    if (el) { el.textContent = msg; el.className = 'ed-inline-status ' + (cls || ''); }
+  };
+  if (!state.dirHandle) { say('アイコンを保存するにはフォルダを開いてください', 'err'); return { changed: false, error: null, skipped: true }; }
+  if (!isValidId(app.id)) { say('ID を正しく入力してください (英数字 . _ - のみ)', 'err'); return { changed: false, error: `${app.id || '(空)'}: ID が不正` }; }
+  if (!force && app.iconImage) return { changed: false, error: null, skipped: true };
+
+  const owner = state.owner;
+  const requestedId = app.id;
+  say(`${owner}/${requestedId} のファイル一覧を確認中…`);
+  const tree = await ghJson(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(requestedId)}/git/trees/HEAD?recursive=1`);
+  if (!tree) { say(`リポジトリ ${owner}/${requestedId} が見つかりません`, 'err'); return { changed: false, error: `${requestedId}: リポジトリなし` }; }
+  const pick = pickRepoIcon(tree.tree);
+  if (!pick) { say('リポジトリ内にアイコン画像 (.ico / *icon*.png / *logo*.png) が見つかりません', 'err'); return { changed: false, error: `${requestedId}: アイコンなし` }; }
+
+  say(`${pick.path} を取得中…`);
+  const blob = await downloadRepoFile(owner, requestedId, pick.path);
+  if (!state.apps.includes(app) || app.id !== requestedId) {
+    return { changed: false, error: `${requestedId}: 取得中にカードが変更されたため反映しませんでした` };
+  }
+
+  const path = `${EDITOR.assetsDir}/${app.id}/icon${pick.ext}`;
+  await writeBlob(path, blob);
+  const old = app.iconImage;
+  if (isLocalAsset(old) && old !== path) pendingDeletes.add(old); // 拡張子が変わった場合は旧ファイルを保存時に片付ける
+  if (state.imageUrls.has(path)) URL.revokeObjectURL(state.imageUrls.get(path));
+  state.imageUrls.set(path, URL.createObjectURL(blob));
+  app.iconImage = path;
+  setDirty(true);
+  if (interactive) { buildForm(); rerenderCard(i); }
+  say(`取得しました: ${pick.path} → ${path}`, 'ok');
+  return { changed: true, error: null, summary: `${app.id}: アイコン ${pick.path}` };
+}
+
 /* 1 件分のリンク情報を GitHub から取り直す。戻り値: { changed, error, summary } */
 async function fetchLinksFor(i, interactive) {
   const app = state.apps[i];
@@ -1249,13 +1349,28 @@ async function fetchLinksFor(i, interactive) {
   }
   if (!app.about && repo.description) app.about = repo.description.replace(/\s*\/\/\s*/g, '\n');
 
-  const changed = JSON.stringify(app) !== before;
+  let changed = JSON.stringify(app) !== before;
   if (changed) setDirty(true);
+
+  // アイコン画像が未設定ならリポジトリ同梱の .ico も探す (手動で設定済みのものは触らない)
+  let iconNote = '';
+  if (state.dirHandle && !app.iconImage) {
+    try {
+      const r = await fetchIconFor(i, { force: false, interactive: false });
+      if (r.changed) { changed = true; iconNote = ' · アイコン取得'; }
+      else if (r.error) iconNote = ' · アイコンなし';
+    } catch (e) {
+      if (e.code === 'GITHUB_RATE_LIMIT') throw e;
+      iconNote = ' · アイコン取得失敗';
+      console.warn('アイコン取得に失敗:', app.id, e);
+    }
+  }
+
   if (interactive) { buildForm(); rerenderCard(i); }
   say(rel
-    ? `取得しました: ${rel.tag_name} (${(rel.published_at || '').slice(0, 10)}) · アセット ${rel.assets?.length || 0} 件${changed ? '' : ' · 変更なし'}`
-    : 'リリースがありません。リポジトリへのリンクのみ設定しました', rel ? 'ok' : '');
-  return { changed, error: null, summary: `${app.id}: ${rel ? rel.tag_name : 'リリースなし'}` };
+    ? `取得しました: ${rel.tag_name} (${(rel.published_at || '').slice(0, 10)}) · アセット ${rel.assets?.length || 0} 件${changed ? '' : ' · 変更なし'}${iconNote}`
+    : 'リリースがありません。リポジトリへのリンクのみ設定しました' + iconNote, rel ? 'ok' : '');
+  return { changed, error: null, summary: `${app.id}: ${rel ? rel.tag_name : 'リリースなし'}${iconNote}` };
 }
 
 async function refreshAllLinks() {
