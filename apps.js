@@ -91,7 +91,7 @@ const apps = [
     "id": "Hocotate-Tool-Kit",
     "name": "Hocotate-Tool-Kit",
     "shortDescription": "This application is a multi-purpose command-line tool for working with Nintendo GameCube / Wii archive and 3D model formats used in Pikmin 2.",
-    "description": "This application is a multi-purpose command-line tool for working with Nintendo GameCube / Wii archive and 3D model formats used in Pikmin 2.\n\nIt supports 14 conversion modes and accepts files via drag & drop, command-line arguments, or Windows right-click context menu. Dropping a BMD/BDL file runs all three BMD export modes at once (bmd2dae, bmd2fbx, bmd2obj) and places each output in a named subfolder next to the source file.\nYou can access various functions by right-clicking.",
+    "description": "本アプリケーションはピクミン2用万能相互変換ツールです．詳細は下記の英文を翻訳してください（他力本願）\nThis application is a multi-purpose command-line tool for working with Nintendo GameCube / Wii archive and 3D model formats used in Pikmin 2.\n\nIt supports 14 conversion modes and accepts files via drag & drop, command-line arguments, or Windows right-click context menu. Dropping a BMD/BDL file runs all three BMD export modes at once (bmd2dae, bmd2fbx, bmd2obj) and places each output in a named subfolder next to the source file.\nYou can access various functions by right-clicking.",
     "icon": "📦",
     "iconColor": "#2B78D3",
     "iconImage": "generated-assets/Hocotate-Tool-Kit/icon.ico",
@@ -211,7 +211,7 @@ const apps = [
     "id": "Meta-Data-Search",
     "name": "Meta-Data-Search",
     "shortDescription": "This application was created to visualize information such as prompts, models,",
-    "description": "This application was created to visualize information such as prompts, models,\nand Lora used in image generation from metadata within images created by generative AI like Stable Diffusion.\n\nThis application was created to extract generation information from the metadata within output images,\nas it was cumbersome to manually store all the details—such as the prompts and Lora weights used during\ngeneration when creating images with Stable Diffusion-based generative AI.\nIt extracts metadata from Stable Diffusion images (ComfyUI / AUTOMATIC1111, etc.) and\nsupports loading PNG / JPG / WebP files (with preview support) via drag-and-drop or buttons.\nThis is the light version, which omits the AI prompt functionality to reduce the overall file size.\nIf you primarily want to use it for metadata extraction, this version might be preferable.",
+    "description": "本アプリケーションは画像のメタデータ調査用のツールです．AI学習の有無やプロンプトの痕跡を確認できます．\nThis application was created to visualize information such as prompts, models,\nand Lora used in image generation from metadata within images created by generative AI like Stable Diffusion.\n\nThis application was created to extract generation information from the metadata within output images,\nas it was cumbersome to manually store all the details—such as the prompts and Lora weights used during\ngeneration when creating images with Stable Diffusion-based generative AI.\nIt extracts metadata from Stable Diffusion images (ComfyUI / AUTOMATIC1111, etc.) and\nsupports loading PNG / JPG / WebP files (with preview support) via drag-and-drop or buttons.\nThis is the light version, which omits the AI prompt functionality to reduce the overall file size.\nIf you primarily want to use it for metadata extraction, this version might be preferable.",
     "icon": "📦",
     "iconColor": "#2B78D3",
     "iconImage": "generated-assets/Meta-Data-Search/icon.ico",
@@ -336,7 +336,7 @@ const apps = [
     "id": "Museum-of-Memories",
     "name": "Museum-of-Memories",
     "shortDescription": "About 本アプリケーションはピクトスクエアの画面を再現するために作成されました．会場の雰囲気を再現しつつピクトスクエアにはない機能を幾つか追加した『ピクスク再現ツール』です．",
-    "description": "About 本アプリケーションはピクトスクエアの画面を再現するために作成されました．会場の雰囲気を再現しつつピクトスクエアにはない機能を幾つか追加した『ピクスク再現ツール』です．\n\nオフラインツールのためリアルタイムでのオンライン通信やお絵描き掲示板，キャラクターを彩るエフェクトの機能等はついていませんが，\nオフラインのアプリとして『デコレーション機能』『キャラクターのダッシュ/位置の微調整』など，ピクスク会場にはない専用の要素を沢山追加しています．",
+    "description": "本アプリケーションはピクトスクエアの画面を再現するために作成されました．会場の雰囲気を再現しつつピクトスクエアにはない機能を幾つか追加した『ピクスク再現ツール』です．\n\nオフラインツールのためリアルタイムでのオンライン通信やお絵描き掲示板，キャラクターを彩るエフェクトの機能等はついていませんが，\nオフラインのアプリとして『デコレーション機能』『キャラクターのダッシュ/位置の微調整』など，ピクスク会場にはない専用の要素を沢山追加しています．",
     "icon": "📦",
     "iconColor": "#2B78D3",
     "iconImage": "generated-assets/Museum-of-Memories/icon.ico",
@@ -358,6 +358,11 @@ const apps = [
         "primary": true
       },
       {
+        "label": "Boothページを開く",
+        "url": "https://c2h4.booth.pm/items/6077235",
+        "primary": false
+      },
+      {
         "label": "GitHubリポジトリを開く",
         "url": "https://github.com/Sadc2h4/Museum-of-Memories",
         "primary": false
@@ -369,15 +374,15 @@ const apps = [
       "generated-assets/Museum-of-Memories/card-03.png"
     ],
     "repoUrl": "https://github.com/Sadc2h4/Museum-of-Memories",
-    "about": "本アプリケーションはピクトスクエアの画面を再現するために作成されました．会場の雰囲気を再現しつつピクトスクエアにはない機能を幾つか追加した『ピクスク再現ツール』です．",
+    "about": "",
     "releaseTag": "V1.2.1a",
     "_source": "resource-manager"
   },
   {
     "id": "Ninja-Gecho",
     "name": "Ninja_Gecho",
-    "shortDescription": "画像の背景透過を手軽に行うための Windows 向け PNG transparency editor です。",
-    "description": "画像の背景透過を手軽に行うための Windows 向け PNG transparency editor です。\n塗りつぶし、色選択、矩形、消しゴム、主線保護塗りつぶしに対応しています。\n\nNinja_Gecho は、白背景や単色背景のイラスト・素材画像を PNG 透過画像へ変換するための desktop application です。\n元アプリ「手軽に透明png」の操作感を参考にしつつ、現在の表示倍率でピクセルを保持したリサイズ保存ができる機能を追加しています。\n主線が切れている線画では、専用の主線保護塗りつぶしモードを使うことで、線抜け部分から内側まで背景透過が流れ込む問題を軽減します。",
+    "shortDescription": "画像の背景透過を手軽に行うための Windows 向け PNG transparency editor です．",
+    "description": "画像の背景透過を手軽に行うための Windows 向け PNG transparency editor です．\n塗りつぶし、色選択、矩形、消しゴム、主線保護塗りつぶしに対応しています。\n\nNinja_Gecho は、白背景や単色背景のイラスト・素材画像を PNG 透過画像へ変換するための desktop application です。\n元アプリ「手軽に透明png」の操作感を参考にしつつ、現在の表示倍率でピクセルを保持したリサイズ保存ができる機能を追加しています。\n主線が切れている線画では、専用の主線保護塗りつぶしモードを使うことで、線抜け部分から内側まで背景透過が流れ込む問題を軽減します。",
     "icon": "📦",
     "iconColor": "#2B78D3",
     "iconImage": "generated-assets/Ninja-Gecho/icon.ico",
@@ -412,7 +417,7 @@ const apps = [
       "generated-assets/Ninja-Gecho/card-01.png"
     ],
     "repoUrl": "https://github.com/Sadc2h4/Ninja-Gecho",
-    "about": "本アプリケーションは画像の背景や指定した場所を手軽に透過して保存するために作成されました。画像の透過以外にも解像度を維持したサイズ変更するなど、手作業だと調整が大変な作業も簡単に実施できるようにしています。",
+    "about": "本アプリケーションは画像の背景や指定した場所を手軽に透過して保存するために作成されました．画像の透過以外にも解像度を維持したサイズ変更するなど，手作業だと調整が大変な作業も簡単に実施できるようにしています．",
     "releaseTag": "v1.4",
     "_source": "resource-manager"
   },
@@ -420,7 +425,7 @@ const apps = [
     "id": "PikiModel-Randomizer",
     "name": "PikiModel-Randomizer",
     "shortDescription": "This application is a GUI tool for batch-generating scale variants of Pikmin 2 character models (BMD files).",
-    "description": "This application is a GUI tool for batch-generating scale variants of Pikmin 2 character models (BMD files).\nScale ranges can be configured individually for each body part\nhead, leaf, body, legs, arms, and eyes.\n\n本アプリケーションはPikmin 2で使用されるキャラクターモデル（BMDファイル）のスケールをランダムに変化させたバリアントを一括生成するGUIツールです．\n頭・葉・体・脚・腕・目といった部位ごとにスケールの変動範囲を細かく設定でき，シード値を指定することで再現性のある結果を得ることができます．\n変換処理には外部ツール Hocotate Toolkit を使用します． 普段見慣れたキャラクターモデルもこのアプリケーションでランダマイズすると違った雰囲気を楽しめるかもしれません。",
+    "description": "ピクミンHack向けのジョークツールです．ピクミンモデルのサイズをランダムに変更してクリーチャーを創り出します．\nThis application is a GUI tool for batch-generating scale variants of Pikmin 2 character models (BMD files).\nScale ranges can be configured individually for each body part\nhead, leaf, body, legs, arms, and eyes.\n\n本アプリケーションはPikmin 2で使用されるキャラクターモデル（BMDファイル）のスケールをランダムに変化させたバリアントを一括生成するGUIツールです．\n頭・葉・体・脚・腕・目といった部位ごとにスケールの変動範囲を細かく設定でき，シード値を指定することで再現性のある結果を得ることができます．\n変換処理には外部ツール Hocotate Toolkit を使用します． 普段見慣れたキャラクターモデルもこのアプリケーションでランダマイズすると違った雰囲気を楽しめるかもしれません。",
     "icon": "📦",
     "iconColor": "#2B78D3",
     "iconImage": "generated-assets/PikiModel-Randomizer/icon.ico",
