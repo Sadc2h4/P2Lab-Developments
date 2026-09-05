@@ -505,8 +505,8 @@ const apps = [
     "category": "アプリ",
     "version": "1.0",
     "lastUpdated": "2026-09-04",
-    "requirements": "",
-    "language": "",
+    "requirements": "Windows10 , Windows11",
+    "language": "C# / .NET 8",
     "features": [
       "bluetoothでの接続コントローラー信号をキーボード入力に変換",
       "Steam等でコントローラー入力のレイヤーが変化した際の優先度変更"
