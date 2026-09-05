@@ -502,7 +502,7 @@ const apps = [
     "icon": "📦",
     "iconColor": "#2B78D3",
     "iconImage": "generated-assets/Sad2Key/icon.png",
-    "category": "UTILITY",
+    "category": "Utility",
     "version": "1.0",
     "lastUpdated": "2026-09-04",
     "requirements": "Windows10 , Windows11",
