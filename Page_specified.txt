@@ -22,6 +22,12 @@ App_icon.ico
 ◆ アクセントカラー
 #30A19F
 
+◆ メインページURL
+https://mesia-art2.carrd.co/
+
+◆ メインページボタン文字
+メインページへ戻る
+
 ◆ ヘッダー画像
 images/hero.png
 
