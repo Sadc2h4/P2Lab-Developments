@@ -5,44 +5,49 @@
  */
 const apps = [
   {
-    "id": "Ajust-Image-Converter",
-    "name": "Ajust-Image-Converter",
-    "shortDescription": "It copies all images within the specified folder, converts them to .",
-    "description": "It copies all images within the specified folder, converts them to .\npng format, and saves them to a new folder.\nThis tool optimizes images for AI training of Lora.\n\nA simple GUI tool that batch-converts images in a selected folder to PNG, saving results into a time-stamped output folder.\nOptional one-click operations include left–right mirroring, pixel-art friendly ×4 upscaling (nearest-neighbor),\naspect-ratio-preserving canvas resize, and background removal (rembg).\nWorkflow is intentionally minimal: choose a folder → start conversion.\nUsing this tool's image conversion can improve the accuracy of Lora creation to a certain extent.",
+    "id": "Chain-Blast",
+    "name": "Chain-Blast V3",
+    "shortDescription": "動画コンテンツのダウンロードなどを一括で実施できる統合編集ツールです。",
+    "description": "Chain_blast.exeは動画コンテンツのダウンロード、形式変換、タイムライン編集など「取得」から「素材作成」までを一括で実施できる統合編集ツールです。 tkinterベースからPyside6ベースに変更し、追加機能も増えて大幅に強化されて再リリースとなりました。",
     "icon": "📦",
     "iconColor": "#2B78D3",
-    "iconImage": "generated-assets/Ajust-Image-Converter/icon.ico",
+    "iconImage": "generated-assets/Chain-Blast/icon.ico",
     "category": "Edit Material",
-    "version": "1.0a",
-    "lastUpdated": "2025-09-29",
-    "requirements": "Windows10，Windows11",
-    "language": "Python 3.10.4 on win32",
+    "version": "3.0a",
+    "lastUpdated": "2026-09-08",
+    "requirements": "Windows11",
+    "language": "python 3.13",
     "features": [
-      "Batch conversion of images in a folder (PNG)",
-      "Automatic image resizing",
-      "Background Removal",
-      "High-resolution enlargement of pixel art"
+      "youtube，ニコニコ動画，Twitterなどyt-dlpが対応するサイトからのコンテンツ取得",
+      "動画や音源の形式変換（フォルダをD&Dで一括変換も可能）",
+      "同やが音源のトリミング機能",
+      "音量調整と音割れ防止",
+      "動画のGIFファイル変換",
+      "音源のループ延長",
+      "PNG画像のICOファイル変換",
+      "フォルダ内のMP3を一つのMP3ファイルに結合",
+      "音源，動画ファイルのタイムライン編集"
     ],
     "downloads": [
       {
-        "label": "最新版をダウンロード (V1.0a)",
-        "url": "https://github.com/Sadc2h4/Ajust-Image-Converter/releases/download/V1.0a/Ajust.Image.Converter.zip",
+        "label": "最新版をダウンロード (v3.0a)",
+        "url": "https://github.com/Sadc2h4/Chain-Blast/releases/download/v3.0a/ChainBlast_v3.0a.zip",
         "primary": true
       },
       {
         "label": "GitHubリポジトリを開く",
-        "url": "https://github.com/Sadc2h4/Ajust-Image-Converter",
+        "url": "https://github.com/Sadc2h4/Chain-Blast",
         "primary": false
       }
     ],
     "images": [
-      "generated-assets/Ajust-Image-Converter/card-01.png",
-      "generated-assets/Ajust-Image-Converter/card-02.png"
+      "generated-assets/Chain-Blast/card-02.png",
+      "generated-assets/Chain-Blast/card-01.png"
     ],
-    "repoUrl": "https://github.com/Sadc2h4/Ajust-Image-Converter",
-    "about": "This tool optimizes images for AI training of Lora. It copies all images within the specified folder, converts them to .png format, and saves them to a new folder.",
-    "releaseTag": "V1.0a",
-    "_source": "resource-manager"
+    "repoUrl": "https://github.com/Sadc2h4/Chain-Blast",
+    "about": "Chain_blast.exeは動画コンテンツのダウンロード、形式変換、タイムライン編集など「取得」から「素材作成」までを一括で実施できる統合編集ツールです。 tkinterベースからPyside6ベースに変更し、追加機能も増えて大幅に強化されて再リリースとなりました。",
+    "releaseTag": "v3.0a",
+    "_source": "editor"
   },
   {
     "id": "GitHub-Deploy-Tool",
@@ -88,6 +93,185 @@ const apps = [
     "_source": "resource-manager"
   },
   {
+    "id": "Ninja-Gecho",
+    "name": "Ninja_Gecho",
+    "shortDescription": "画像の背景透過を手軽に行うための Windows 向け PNG transparency editor です．",
+    "description": "画像の背景透過を手軽に行うための Windows 向け PNG transparency editor です．\n塗りつぶし、色選択、矩形、消しゴム、主線保護塗りつぶしに対応しています。\n\nNinja_Gecho は、白背景や単色背景のイラスト・素材画像を PNG 透過画像へ変換するための desktop application です。\n元アプリ「手軽に透明png」の操作感を参考にしつつ、現在の表示倍率でピクセルを保持したリサイズ保存ができる機能を追加しています。\n主線が切れている線画では、専用の主線保護塗りつぶしモードを使うことで、線抜け部分から内側まで背景透過が流れ込む問題を軽減します。",
+    "icon": "📦",
+    "iconColor": "#2B78D3",
+    "iconImage": "generated-assets/Ninja-Gecho/icon.ico",
+    "category": "Image Tool / 画像編集",
+    "version": "1.4",
+    "lastUpdated": "2026-05-31",
+    "requirements": "Windows 10 , Windows 11 / x64",
+    "language": "C# / .NET 8 / Windows Forms",
+    "features": [
+      "クリックした連続領域を透過する塗りつぶしモード",
+      "主線の切れ目を保護する protected bucket mode",
+      "クリックした色に近い全体色を透過する色選択モード",
+      "四角形範囲の透過",
+      "16x16 消しゴムによる部分透過",
+      "ふちの半端な色を目立たなくするフィニッシュ処理",
+      "現在の拡大率で pixel-perfect PNG 保存",
+      "PNG の透明度を維持したコピー＆ペースト"
+    ],
+    "downloads": [
+      {
+        "label": "最新版をダウンロード (v1.4)",
+        "url": "https://github.com/Sadc2h4/Ninja-Gecho/releases/download/v1.4/Ninja_Gecho_v1.4.zip",
+        "primary": true
+      },
+      {
+        "label": "GitHubリポジトリを開く",
+        "url": "https://github.com/Sadc2h4/Ninja-Gecho",
+        "primary": false
+      }
+    ],
+    "images": [
+      "generated-assets/Ninja-Gecho/card-01.png"
+    ],
+    "repoUrl": "https://github.com/Sadc2h4/Ninja-Gecho",
+    "about": "本アプリケーションは画像の背景や指定した場所を手軽に透過して保存するために作成されました．画像の透過以外にも解像度を維持したサイズ変更するなど，手作業だと調整が大変な作業も簡単に実施できるようにしています．",
+    "releaseTag": "v1.4",
+    "_source": "resource-manager"
+  },
+  {
+    "id": "Museum-of-Memories",
+    "name": "Museum-of-Memories",
+    "shortDescription": "About 本アプリケーションはピクトスクエアの画面を再現するために作成されました．会場の雰囲気を再現しつつピクトスクエアにはない機能を幾つか追加した『ピクスク再現ツール』です．",
+    "description": "本アプリケーションはピクトスクエアの画面を再現するために作成されました．会場の雰囲気を再現しつつピクトスクエアにはない機能を幾つか追加した『ピクスク再現ツール』です．\n\nオフラインツールのためリアルタイムでのオンライン通信やお絵描き掲示板，キャラクターを彩るエフェクトの機能等はついていませんが，\nオフラインのアプリとして『デコレーション機能』『キャラクターのダッシュ/位置の微調整』など，ピクスク会場にはない専用の要素を沢山追加しています．",
+    "icon": "📦",
+    "iconColor": "#2B78D3",
+    "iconImage": "generated-assets/Museum-of-Memories/icon.ico",
+    "category": "PictSquare",
+    "version": "1.2.1a",
+    "lastUpdated": "2025-10-07",
+    "requirements": "Windows10，Windows11",
+    "language": "Python 3.10.8",
+    "features": [
+      "PictSquareの会場再現",
+      "好きな素材を置いて記念撮影",
+      "ちょっとしたミニゲーム（隠れキャラ探しTA）",
+      "秘密のコードと隠しアイテム（イベント限定）"
+    ],
+    "downloads": [
+      {
+        "label": "最新版をダウンロード (V1.2.1a)",
+        "url": "https://github.com/Sadc2h4/Museum-of-Memories/releases/download/V1.2.1a/Museum_of_Memories.zip",
+        "primary": true
+      },
+      {
+        "label": "GitHubリポジトリを開く",
+        "url": "https://github.com/Sadc2h4/Museum-of-Memories",
+        "primary": false
+      },
+      {
+        "label": "Boothページを開く",
+        "url": "https://c2h4.booth.pm/items/6077235",
+        "primary": false
+      }
+    ],
+    "images": [
+      "generated-assets/Museum-of-Memories/card-01.png",
+      "generated-assets/Museum-of-Memories/card-02.png",
+      "generated-assets/Museum-of-Memories/card-03.png"
+    ],
+    "repoUrl": "https://github.com/Sadc2h4/Museum-of-Memories",
+    "about": "本アプリケーションはピクトスクエアの画面を再現するために作成されました．会場の雰囲気を再現しつつピクトスクエアにはない機能を幾つか追加した『ピクスク再現ツール』です．",
+    "releaseTag": "V1.2.1a",
+    "_source": "resource-manager"
+  },
+  {
+    "id": "Klefki-Conflu",
+    "name": "Klefki-Conflu",
+    "shortDescription": "本アプリケーションはConfluenceのバックアップZIPファイルを可読性の高いHTML形式に復元するツールです．",
+    "description": "本アプリケーションはConfluenceのバックアップZIPファイルを可読性の高いHTML形式に復元するツールです．\n\n標準のConfluenceバックアップファイルはローカルサーバー環境の構築とConfluenceシステム内での閲覧を必要としますが，\n本アプリケーションでは改訂履歴，画像やドキュメントファイルを含むデータの約90%を簡単操作で復元可能です．",
+    "icon": "📦",
+    "iconColor": "#2B78D3",
+    "iconImage": "generated-assets/Klefki-Conflu/icon.ico",
+    "category": "Data Analysis",
+    "version": "1.40a",
+    "lastUpdated": "2025-11-24",
+    "requirements": "Windows10，Windows11",
+    "language": "Python 3.10.8",
+    "features": [
+      "ConfluenceのバックアップZipの復元",
+      "暗号化コンテンツの復元"
+    ],
+    "downloads": [
+      {
+        "label": "最新版をダウンロード (v1.40a)",
+        "url": "https://github.com/Sadc2h4/Klefki-Conflu/releases/download/v1.40a/Klefki_Conflu_v1.40.zip",
+        "primary": true
+      },
+      {
+        "label": "GitHubリポジトリを開く",
+        "url": "https://github.com/Sadc2h4/Klefki-Conflu",
+        "primary": false
+      }
+    ],
+    "images": [
+      "generated-assets/Klefki-Conflu/card-01.png",
+      "generated-assets/Klefki-Conflu/card-02.png"
+    ],
+    "repoUrl": "https://github.com/Sadc2h4/Klefki-Conflu",
+    "about": "This Python application restores Confluence backup ZIP files into a readable HTML format. While standard Confluence backup files require setting up a local server environment and viewing them within the Confluence system, this application enables restoration of approximately 90% of the data, including revision history.",
+    "releaseTag": "v1.40a",
+    "_source": "resource-manager"
+  },
+  {
+    "id": "Big-Pan-Map-Editor",
+    "name": "BigPanMap Editor",
+    "shortDescription": "This is an integrated application for editing spawn information, transport routes, and water boxes used in the cave and overworld units and maps of *Pikmin 2*",
+    "description": "Big Pan Map Editor は，ゲームキューブ用ソフト『ピクミン2』の洞窟ユニットと地上マップを確認しながら編集するための Windows アプリです．\nThis is an integrated application for editing spawn information, transport routes, and water boxes used in the cave and overworld units and maps of *Pikmin 2*. You can edit directly by specifying the folder containing the ISO file to extract the disc, or by dragging and dropping the folder containing the ARC and text SZS files directly.",
+    "icon": "📦",
+    "iconColor": "#2B78D3",
+    "iconImage": "generated-assets/Big-Pan-Map-Editor/icon.ico",
+    "category": "Pikmin Hack",
+    "version": "2.2a",
+    "lastUpdated": "2026-06-23",
+    "requirements": "",
+    "language": "C# / .NET 8 ",
+    "features": [
+      "Cave unit list browsing",
+      "Cave unit pretty image preview, 2D placement view, and 3D model view",
+      "Cave 3D view source selection: texts/grid collision view or arc visual",
+      "Spawn editing: add, delete, move, angle, radius, type, and count",
+      "Route waypoint editing: add, delete, move, radius, link add, and link delete",
+      "Waterbox editing: add, delete, move, XZ range editing, and height inspection",
+      "Save support for layout, route, and waterbox; cave saves update texts.szs only",
+      "Keyboard shortcuts: Ctrl+S / Ctrl+Shift+S save, Ctrl+Z undo, Ctrl+Y / Ctrl+Shift+Z redo",
+      "Field map list browsing",
+      "Elapsed-day filtering for field generator objects",
+      "Field generator object editing: add, delete, move, angle, radius, and raw text editing",
+      "Field object templates for gates, bridges, paper bags, water drains, treasures, plants, rocks, eggs, and other generator objects",
+      "Texture footprint display and hit testing for bridges, gates, and block-like field objects",
+      "Field route.txt waypoint editing: add, delete, move, radius, and link editing",
+      "Persistent mini controller visibility settings for spawn, route, radius, waterbox, and connection overlays",
+      "Japanese / English language switching",
+      "In-app manual viewer"
+    ],
+    "downloads": [
+      {
+        "label": "最新版をダウンロード (v2.2a)",
+        "url": "https://github.com/Sadc2h4/Big-Pan-Map-Editor/releases/download/v2.2a/BigPanMapEditor_v2.2a.zip",
+        "primary": true
+      },
+      {
+        "label": "GitHubリポジトリを開く",
+        "url": "https://github.com/Sadc2h4/Big-Pan-Map-Editor",
+        "primary": false
+      }
+    ],
+    "images": [
+      "generated-assets/Big-Pan-Map-Editor/card-01.png"
+    ],
+    "repoUrl": "https://github.com/Sadc2h4/Big-Pan-Map-Editor",
+    "about": "This is an integrated application for editing spawn information, transport routes, and water boxes used in the cave and overworld units and maps of *Pikmin 2*. You can edit directly by specifying the folder containing the ISO file to extract the disc, or by dragging and dropping the folder containing the ARC and text SZS files directly.",
+    "releaseTag": "v2.2a",
+    "_source": "editor"
+  },
+  {
     "id": "Hocotate-Tool-Kit",
     "name": "Hocotate-Tool-Kit",
     "shortDescription": "This application is a multi-purpose command-line tool for working with Nintendo GameCube / Wii archive and 3D model formats used in Pikmin 2.",
@@ -130,42 +314,41 @@ const apps = [
     "_source": "resource-manager"
   },
   {
-    "id": "Klefki-Conflu",
-    "name": "Klefki-Conflu",
-    "shortDescription": "本アプリケーションはConfluenceのバックアップZIPファイルを可読性の高いHTML形式に復元するツールです．",
-    "description": "本アプリケーションはConfluenceのバックアップZIPファイルを可読性の高いHTML形式に復元するツールです．\n\n標準のConfluenceバックアップファイルはローカルサーバー環境の構築とConfluenceシステム内での閲覧を必要としますが，\n本アプリケーションでは改訂履歴，画像やドキュメントファイルを含むデータの約90%を簡単操作で復元可能です．",
+    "id": "Sad2Key",
+    "name": "Sad2Key",
+    "shortDescription": "ゲームコントローラーの入力をキーボード入力に変換するアプリケーションです．",
+    "description": "本アプリケーションは JoyToKey で発生していた接続の不安定さや入力変換の不具合を回避するために作成されました. Switch系コントローラーを HID で直接読み取る経路を持ち,JoyToKey形式の .cfg プロファイルをそのまま読み込み・編集・保存できます.",
     "icon": "📦",
     "iconColor": "#2B78D3",
-    "iconImage": "generated-assets/Klefki-Conflu/icon.ico",
-    "category": "Data Analysis",
-    "version": "1.40a",
-    "lastUpdated": "2025-11-24",
-    "requirements": "Windows10，Windows11",
-    "language": "Python 3.10.8",
+    "iconImage": "generated-assets/Sad2Key/icon.png",
+    "category": "Utility",
+    "version": "1.0",
+    "lastUpdated": "2026-09-04",
+    "requirements": "Windows10 , Windows11",
+    "language": "C# / .NET 8",
     "features": [
-      "ConfluenceのバックアップZipの復元",
-      "暗号化コンテンツの復元"
+      "bluetoothでの接続コントローラー信号をキーボード入力に変換",
+      "Steam等でコントローラー入力のレイヤーが変化した際の優先度変更"
     ],
     "downloads": [
       {
-        "label": "最新版をダウンロード (v1.40a)",
-        "url": "https://github.com/Sadc2h4/Klefki-Conflu/releases/download/v1.40a/Klefki_Conflu_v1.40.zip",
+        "label": "最新版をダウンロード (v1.0)",
+        "url": "https://github.com/Sadc2h4/Sad2Key/releases/download/v1.0/Sad2Key_v1.0.zip",
         "primary": true
       },
       {
         "label": "GitHubリポジトリを開く",
-        "url": "https://github.com/Sadc2h4/Klefki-Conflu",
+        "url": "https://github.com/Sadc2h4/Sad2Key",
         "primary": false
       }
     ],
     "images": [
-      "generated-assets/Klefki-Conflu/card-01.png",
-      "generated-assets/Klefki-Conflu/card-02.png"
+      "generated-assets/Sad2Key/card-01.png"
     ],
-    "repoUrl": "https://github.com/Sadc2h4/Klefki-Conflu",
-    "about": "This Python application restores Confluence backup ZIP files into a readable HTML format. While standard Confluence backup files require setting up a local server environment and viewing them within the Confluence system, this application enables restoration of approximately 90% of the data, including revision history.",
-    "releaseTag": "v1.40a",
-    "_source": "resource-manager"
+    "repoUrl": "https://github.com/Sadc2h4/Sad2Key",
+    "about": "Nintendo Switch Pro Controller / Joy-Con の入力をキーボード入力へ変換する Windows 向けツール．JoyToKey形式 .cfg に対応．",
+    "releaseTag": "v1.0",
+    "_source": "editor"
   },
   {
     "id": "Lotad-Icon-Editor",
@@ -205,6 +388,95 @@ const apps = [
     "repoUrl": "https://github.com/Sadc2h4/Lotad-Icon-Editor",
     "about": "BPRJ/BPRE向けのポケモンアイコン確認用ツールです．Romイメージだけでなくフォルダにも対応しています．",
     "releaseTag": "v2.0a",
+    "_source": "resource-manager"
+  },
+  {
+    "id": "Mudkip-Script-Editor",
+    "name": "Mudkip-Script-Editor",
+    "shortDescription": "ポケモンFR（BPRJ）向けの技関連スクリプトの効果確認，技アニメーションの確認，",
+    "description": "ポケモンFR（BPRJ）向けの技関連スクリプトの効果確認，技アニメーションの確認，\n表示パターンの設定，タイプのチャート表示などの機能を纏めた統合編集ツールです．\n\n本アプリケーションは技情報の編集以外にスクリプトの効果確認，技アニメーションの確認，表示パターンの設定，タイプのチャート編集など，\n技作成の機能に特化した統合ツールとして作成しました．\nポケモンFR（BPRJ）の技編集ツールとしてはSkillEditor，poke-Syntheなどがありますが，本アプリケーションでは\n技IDごとに情報を個別で取得して編集可能な他，複雑なスクリプトの効果内容やジャンプ先を可視化するなど，バイナリベースでより高度な編集が可能です．\n使いにくい部分もあると思いますが，少なくともバイナリエディタでの直書き込みと比較したら編集が楽な気がします()",
+    "icon": "📦",
+    "iconColor": "#2B78D3",
+    "iconImage": "generated-assets/Mudkip-Script-Editor/icon.ico",
+    "category": "Pokemon Hack",
+    "version": "1.3a",
+    "lastUpdated": "2025-09-05",
+    "requirements": "Windows 10 , Windows 11",
+    "language": "C#.NET 4.8",
+    "features": [
+      "Romイメージ内の技データをExcelとしてエクスポート",
+      "技効果スクリプトの内容閲覧，編集",
+      "技アニメスクリプトの内容閲覧，編集",
+      "技実行時の言い回しパターン編集",
+      "タイプ相性チャート閲覧，編集",
+      "戦闘定型文閲覧",
+      "Stirlingへの外部参照補助"
+    ],
+    "downloads": [
+      {
+        "label": "最新版をダウンロード (v1.3a)",
+        "url": "https://github.com/Sadc2h4/Mudkip-Script-Editor/releases/download/v1.3a/Meta_DataSearch_light.zip",
+        "primary": true
+      },
+      {
+        "label": "Mudkip.Script.Editor.1.3a.zip",
+        "url": "https://github.com/Sadc2h4/Mudkip-Script-Editor/releases/download/v1.3a/Mudkip.Script.Editor.1.3a.zip",
+        "primary": false
+      },
+      {
+        "label": "GitHubリポジトリを開く",
+        "url": "https://github.com/Sadc2h4/Mudkip-Script-Editor",
+        "primary": false
+      }
+    ],
+    "images": [
+      "generated-assets/Mudkip-Script-Editor/card-01.png",
+      "generated-assets/Mudkip-Script-Editor/card-02.png",
+      "generated-assets/Mudkip-Script-Editor/card-03.png"
+    ],
+    "repoUrl": "https://github.com/Sadc2h4/Mudkip-Script-Editor",
+    "about": "ポケモンFR（BPRJ）向けの技関連スクリプトの効果確認，技アニメーションの確認，表示パターンの設定，タイプのチャート表示などの機能を纏めた統合編集ツールです．",
+    "releaseTag": "v1.3a",
+    "_source": "resource-manager"
+  },
+  {
+    "id": "Web-File-Gulpin",
+    "name": "Web-File-Gulpin",
+    "shortDescription": "本アプリケーションはウェブサイトのURLから構成ファイルを纏めて取得する目的で作成されたデータ取得ツールです．",
+    "description": "本アプリケーションはウェブサイトのURLから構成ファイルを纏めて取得する目的で作成されたデータ取得ツールです．\nURLを入れて実行ボタンを押すだけでページ内のコンテンツを丸ごと取得できます．\n\nホームページのバックアップや，大量に取得が必要なデータファイルをまとめて取得する等の目的で使用ができます．\nwebページの保存でも同じことが可能ですが，本アプリはカテゴリ分けやインデックス作成を自動で実行できるため管理のしやすさに重点を置いています．",
+    "icon": "📦",
+    "iconColor": "#2B78D3",
+    "iconImage": "generated-assets/Web-File-Gulpin/icon.ico",
+    "category": "Data Analysis",
+    "version": "1.1f",
+    "lastUpdated": "2026-03-31",
+    "requirements": "Windows10，Windows11",
+    "language": "Python 3.10.4",
+    "features": [
+      "ホームーページからのデータ一括取得",
+      "jsonファイル抽出",
+      "画像データ抽出"
+    ],
+    "downloads": [
+      {
+        "label": "最新版をダウンロード (v1.1f)",
+        "url": "https://github.com/Sadc2h4/Web-File-Gulpin/releases/download/v1.1f/Web_File_Gulpin_1.1f.zip",
+        "primary": true
+      },
+      {
+        "label": "GitHubリポジトリを開く",
+        "url": "https://github.com/Sadc2h4/Web-File-Gulpin",
+        "primary": false
+      }
+    ],
+    "images": [
+      "generated-assets/Web-File-Gulpin/card-01.png",
+      "generated-assets/Web-File-Gulpin/card-02.png",
+      "generated-assets/Web-File-Gulpin/card-03.png"
+    ],
+    "repoUrl": "https://github.com/Sadc2h4/Web-File-Gulpin",
+    "about": "本アプリケーションはウェブサイトのURLからホームページ構成ファイル，ダウンロードリンクに登録された実ファイル，登録画像などを一括で取得する目的で作成されました． ホームページのバックアップや，大量に取得が必要なデータファイルをまとめて取得する等の目的で使用ができます． （webページの保存でも同じことが可能ですが，本アプリはカテゴリ分けやインデックス作成を自動で実行できるため管理のしやすさに重点を置いています）",
+    "releaseTag": "v1.1f",
     "_source": "resource-manager"
   },
   {
@@ -284,144 +556,6 @@ const apps = [
     "_source": "resource-manager"
   },
   {
-    "id": "Mudkip-Script-Editor",
-    "name": "Mudkip-Script-Editor",
-    "shortDescription": "ポケモンFR（BPRJ）向けの技関連スクリプトの効果確認，技アニメーションの確認，",
-    "description": "ポケモンFR（BPRJ）向けの技関連スクリプトの効果確認，技アニメーションの確認，\n表示パターンの設定，タイプのチャート表示などの機能を纏めた統合編集ツールです．\n\n本アプリケーションは技情報の編集以外にスクリプトの効果確認，技アニメーションの確認，表示パターンの設定，タイプのチャート編集など，\n技作成の機能に特化した統合ツールとして作成しました．\nポケモンFR（BPRJ）の技編集ツールとしてはSkillEditor，poke-Syntheなどがありますが，本アプリケーションでは\n技IDごとに情報を個別で取得して編集可能な他，複雑なスクリプトの効果内容やジャンプ先を可視化するなど，バイナリベースでより高度な編集が可能です．\n使いにくい部分もあると思いますが，少なくともバイナリエディタでの直書き込みと比較したら編集が楽な気がします()",
-    "icon": "📦",
-    "iconColor": "#2B78D3",
-    "iconImage": "generated-assets/Mudkip-Script-Editor/icon.ico",
-    "category": "Pokemon Hack",
-    "version": "1.3a",
-    "lastUpdated": "2025-09-05",
-    "requirements": "Windows 10 , Windows 11",
-    "language": "C#.NET 4.8",
-    "features": [
-      "Romイメージ内の技データをExcelとしてエクスポート",
-      "技効果スクリプトの内容閲覧，編集",
-      "技アニメスクリプトの内容閲覧，編集",
-      "技実行時の言い回しパターン編集",
-      "タイプ相性チャート閲覧，編集",
-      "戦闘定型文閲覧",
-      "Stirlingへの外部参照補助"
-    ],
-    "downloads": [
-      {
-        "label": "最新版をダウンロード (v1.3a)",
-        "url": "https://github.com/Sadc2h4/Mudkip-Script-Editor/releases/download/v1.3a/Meta_DataSearch_light.zip",
-        "primary": true
-      },
-      {
-        "label": "Mudkip.Script.Editor.1.3a.zip",
-        "url": "https://github.com/Sadc2h4/Mudkip-Script-Editor/releases/download/v1.3a/Mudkip.Script.Editor.1.3a.zip",
-        "primary": false
-      },
-      {
-        "label": "GitHubリポジトリを開く",
-        "url": "https://github.com/Sadc2h4/Mudkip-Script-Editor",
-        "primary": false
-      }
-    ],
-    "images": [
-      "generated-assets/Mudkip-Script-Editor/card-01.png",
-      "generated-assets/Mudkip-Script-Editor/card-02.png",
-      "generated-assets/Mudkip-Script-Editor/card-03.png"
-    ],
-    "repoUrl": "https://github.com/Sadc2h4/Mudkip-Script-Editor",
-    "about": "ポケモンFR（BPRJ）向けの技関連スクリプトの効果確認，技アニメーションの確認，表示パターンの設定，タイプのチャート表示などの機能を纏めた統合編集ツールです．",
-    "releaseTag": "v1.3a",
-    "_source": "resource-manager"
-  },
-  {
-    "id": "Museum-of-Memories",
-    "name": "Museum-of-Memories",
-    "shortDescription": "About 本アプリケーションはピクトスクエアの画面を再現するために作成されました．会場の雰囲気を再現しつつピクトスクエアにはない機能を幾つか追加した『ピクスク再現ツール』です．",
-    "description": "本アプリケーションはピクトスクエアの画面を再現するために作成されました．会場の雰囲気を再現しつつピクトスクエアにはない機能を幾つか追加した『ピクスク再現ツール』です．\n\nオフラインツールのためリアルタイムでのオンライン通信やお絵描き掲示板，キャラクターを彩るエフェクトの機能等はついていませんが，\nオフラインのアプリとして『デコレーション機能』『キャラクターのダッシュ/位置の微調整』など，ピクスク会場にはない専用の要素を沢山追加しています．",
-    "icon": "📦",
-    "iconColor": "#2B78D3",
-    "iconImage": "generated-assets/Museum-of-Memories/icon.ico",
-    "category": "PictSquare",
-    "version": "1.2.1a",
-    "lastUpdated": "2025-10-07",
-    "requirements": "Windows10，Windows11",
-    "language": "Python 3.10.8",
-    "features": [
-      "PictSquareの会場再現",
-      "好きな素材を置いて記念撮影",
-      "ちょっとしたミニゲーム（隠れキャラ探しTA）",
-      "秘密のコードと隠しアイテム（イベント限定）"
-    ],
-    "downloads": [
-      {
-        "label": "最新版をダウンロード (V1.2.1a)",
-        "url": "https://github.com/Sadc2h4/Museum-of-Memories/releases/download/V1.2.1a/Museum_of_Memories.zip",
-        "primary": true
-      },
-      {
-        "label": "Boothページを開く",
-        "url": "https://c2h4.booth.pm/items/6077235",
-        "primary": false
-      },
-      {
-        "label": "GitHubリポジトリを開く",
-        "url": "https://github.com/Sadc2h4/Museum-of-Memories",
-        "primary": false
-      }
-    ],
-    "images": [
-      "generated-assets/Museum-of-Memories/card-01.png",
-      "generated-assets/Museum-of-Memories/card-02.png",
-      "generated-assets/Museum-of-Memories/card-03.png"
-    ],
-    "repoUrl": "https://github.com/Sadc2h4/Museum-of-Memories",
-    "about": "",
-    "releaseTag": "V1.2.1a",
-    "_source": "resource-manager"
-  },
-  {
-    "id": "Ninja-Gecho",
-    "name": "Ninja_Gecho",
-    "shortDescription": "画像の背景透過を手軽に行うための Windows 向け PNG transparency editor です．",
-    "description": "画像の背景透過を手軽に行うための Windows 向け PNG transparency editor です．\n塗りつぶし、色選択、矩形、消しゴム、主線保護塗りつぶしに対応しています。\n\nNinja_Gecho は、白背景や単色背景のイラスト・素材画像を PNG 透過画像へ変換するための desktop application です。\n元アプリ「手軽に透明png」の操作感を参考にしつつ、現在の表示倍率でピクセルを保持したリサイズ保存ができる機能を追加しています。\n主線が切れている線画では、専用の主線保護塗りつぶしモードを使うことで、線抜け部分から内側まで背景透過が流れ込む問題を軽減します。",
-    "icon": "📦",
-    "iconColor": "#2B78D3",
-    "iconImage": "generated-assets/Ninja-Gecho/icon.ico",
-    "category": "Image Tool / 画像編集",
-    "version": "1.4",
-    "lastUpdated": "2026-05-31",
-    "requirements": "Windows 10 , Windows 11 / x64",
-    "language": "C# / .NET 8 / Windows Forms",
-    "features": [
-      "クリックした連続領域を透過する塗りつぶしモード",
-      "主線の切れ目を保護する protected bucket mode",
-      "クリックした色に近い全体色を透過する色選択モード",
-      "四角形範囲の透過",
-      "16x16 消しゴムによる部分透過",
-      "ふちの半端な色を目立たなくするフィニッシュ処理",
-      "現在の拡大率で pixel-perfect PNG 保存",
-      "PNG の透明度を維持したコピー＆ペースト"
-    ],
-    "downloads": [
-      {
-        "label": "最新版をダウンロード (v1.4)",
-        "url": "https://github.com/Sadc2h4/Ninja-Gecho/releases/download/v1.4/Ninja_Gecho_v1.4.zip",
-        "primary": true
-      },
-      {
-        "label": "GitHubリポジトリを開く",
-        "url": "https://github.com/Sadc2h4/Ninja-Gecho",
-        "primary": false
-      }
-    ],
-    "images": [
-      "generated-assets/Ninja-Gecho/card-01.png"
-    ],
-    "repoUrl": "https://github.com/Sadc2h4/Ninja-Gecho",
-    "about": "本アプリケーションは画像の背景や指定した場所を手軽に透過して保存するために作成されました．画像の透過以外にも解像度を維持したサイズ変更するなど，手作業だと調整が大変な作業も簡単に実施できるようにしています．",
-    "releaseTag": "v1.4",
-    "_source": "resource-manager"
-  },
-  {
     "id": "PikiModel-Randomizer",
     "name": "PikiModel-Randomizer",
     "shortDescription": "This application is a GUI tool for batch-generating scale variants of Pikmin 2 character models (BMD files).",
@@ -460,80 +594,43 @@ const apps = [
     "_source": "resource-manager"
   },
   {
-    "id": "Web-File-Gulpin",
-    "name": "Web-File-Gulpin",
-    "shortDescription": "本アプリケーションはウェブサイトのURLから構成ファイルを纏めて取得する目的で作成されたデータ取得ツールです．",
-    "description": "本アプリケーションはウェブサイトのURLから構成ファイルを纏めて取得する目的で作成されたデータ取得ツールです．\nURLを入れて実行ボタンを押すだけでページ内のコンテンツを丸ごと取得できます．\n\nホームページのバックアップや，大量に取得が必要なデータファイルをまとめて取得する等の目的で使用ができます．\nwebページの保存でも同じことが可能ですが，本アプリはカテゴリ分けやインデックス作成を自動で実行できるため管理のしやすさに重点を置いています．",
+    "id": "Ajust-Image-Converter",
+    "name": "Ajust-Image-Converter",
+    "shortDescription": "It copies all images within the specified folder, converts them to .",
+    "description": "It copies all images within the specified folder, converts them to .\npng format, and saves them to a new folder.\nThis tool optimizes images for AI training of Lora.\n\nA simple GUI tool that batch-converts images in a selected folder to PNG, saving results into a time-stamped output folder.\nOptional one-click operations include left–right mirroring, pixel-art friendly ×4 upscaling (nearest-neighbor),\naspect-ratio-preserving canvas resize, and background removal (rembg).\nWorkflow is intentionally minimal: choose a folder → start conversion.\nUsing this tool's image conversion can improve the accuracy of Lora creation to a certain extent.",
     "icon": "📦",
     "iconColor": "#2B78D3",
-    "iconImage": "generated-assets/Web-File-Gulpin/icon.ico",
-    "category": "Data Analysis",
-    "version": "1.1f",
-    "lastUpdated": "2026-03-31",
+    "iconImage": "generated-assets/Ajust-Image-Converter/icon.ico",
+    "category": "Edit Material",
+    "version": "1.0a",
+    "lastUpdated": "2025-09-29",
     "requirements": "Windows10，Windows11",
-    "language": "Python 3.10.4",
+    "language": "Python 3.10.4 on win32",
     "features": [
-      "ホームーページからのデータ一括取得",
-      "jsonファイル抽出",
-      "画像データ抽出"
+      "Batch conversion of images in a folder (PNG)",
+      "Automatic image resizing",
+      "Background Removal",
+      "High-resolution enlargement of pixel art"
     ],
     "downloads": [
       {
-        "label": "最新版をダウンロード (v1.1f)",
-        "url": "https://github.com/Sadc2h4/Web-File-Gulpin/releases/download/v1.1f/Web_File_Gulpin_1.1f.zip",
+        "label": "最新版をダウンロード (V1.0a)",
+        "url": "https://github.com/Sadc2h4/Ajust-Image-Converter/releases/download/V1.0a/Ajust.Image.Converter.zip",
         "primary": true
       },
       {
         "label": "GitHubリポジトリを開く",
-        "url": "https://github.com/Sadc2h4/Web-File-Gulpin",
+        "url": "https://github.com/Sadc2h4/Ajust-Image-Converter",
         "primary": false
       }
     ],
     "images": [
-      "generated-assets/Web-File-Gulpin/card-01.png",
-      "generated-assets/Web-File-Gulpin/card-02.png",
-      "generated-assets/Web-File-Gulpin/card-03.png"
+      "generated-assets/Ajust-Image-Converter/card-01.png",
+      "generated-assets/Ajust-Image-Converter/card-02.png"
     ],
-    "repoUrl": "https://github.com/Sadc2h4/Web-File-Gulpin",
-    "about": "本アプリケーションはウェブサイトのURLからホームページ構成ファイル，ダウンロードリンクに登録された実ファイル，登録画像などを一括で取得する目的で作成されました． ホームページのバックアップや，大量に取得が必要なデータファイルをまとめて取得する等の目的で使用ができます． （webページの保存でも同じことが可能ですが，本アプリはカテゴリ分けやインデックス作成を自動で実行できるため管理のしやすさに重点を置いています）",
-    "releaseTag": "v1.1f",
+    "repoUrl": "https://github.com/Sadc2h4/Ajust-Image-Converter",
+    "about": "This tool optimizes images for AI training of Lora. It copies all images within the specified folder, converts them to .png format, and saves them to a new folder.",
+    "releaseTag": "V1.0a",
     "_source": "resource-manager"
-  },
-  {
-    "id": "Sad2Key",
-    "name": "Sad2Key",
-    "shortDescription": "ゲームコントローラーの入力をキーボード入力に変換するアプリケーションです．",
-    "description": "本アプリケーションは JoyToKey で発生していた接続の不安定さや入力変換の不具合を回避するために作成されました. Switch系コントローラーを HID で直接読み取る経路を持ち,JoyToKey形式の .cfg プロファイルをそのまま読み込み・編集・保存できます.",
-    "icon": "📦",
-    "iconColor": "#2B78D3",
-    "iconImage": "generated-assets/Sad2Key/icon.png",
-    "category": "Utility",
-    "version": "1.0",
-    "lastUpdated": "2026-09-04",
-    "requirements": "Windows10 , Windows11",
-    "language": "C# / .NET 8",
-    "features": [
-      "bluetoothでの接続コントローラー信号をキーボード入力に変換",
-      "Steam等でコントローラー入力のレイヤーが変化した際の優先度変更"
-    ],
-    "downloads": [
-      {
-        "label": "最新版をダウンロード (v1.0)",
-        "url": "https://github.com/Sadc2h4/Sad2Key/releases/download/v1.0/Sad2Key_v1.0.zip",
-        "primary": true
-      },
-      {
-        "label": "GitHubリポジトリを開く",
-        "url": "https://github.com/Sadc2h4/Sad2Key",
-        "primary": false
-      }
-    ],
-    "images": [
-      "generated-assets/Sad2Key/card-01.png"
-    ],
-    "repoUrl": "https://github.com/Sadc2h4/Sad2Key",
-    "about": "Nintendo Switch Pro Controller / Joy-Con の入力をキーボード入力へ変換する Windows 向けツール．JoyToKey形式 .cfg に対応．",
-    "releaseTag": "v1.0",
-    "_source": "editor"
   }
 ];
